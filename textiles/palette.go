@@ -54,7 +54,9 @@ func (c ColorPalette) GetNamedColorByIndex(index int) NamedColor {
 func (c ColorPalette) AsNamedColors() []NamedColor {
     return c.colors
 }
-
+func (c ColorPalette) IsValidIndex(index int) bool {
+    return index >= 0 && index < len(c.colors)
+}
 func WritePaletteFile(file io.StringWriter, palette ColorPalette) error {
     colorRecord := recfile.Record{}
     for _, namedColor := range palette.AsNamedColors() {
