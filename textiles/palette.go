@@ -42,14 +42,14 @@ func (c ColorPalette) WithColorChanged(index int, rgba color.RGBA) ColorPalette 
 }
 
 func (c ColorPalette) WithColorRenamed(oldName, newName string) ColorPalette {
-    var newPalette ColorPalette
-    for name, paletteColor := range c.names {
+    newPalette := ColorPalette{make(map[string]int), make([]NamedColor, len(c.colors))}
+    for name, colorIndex := range c.names {
         if name == oldName {
-            newPalette.names[newName] = paletteColor
+            newPalette.names[newName] = colorIndex
         } else {
-            newPalette.names[name] = paletteColor
+            newPalette.names[name] = colorIndex
         }
-        newPalette.colors[paletteColor] = c.colors[paletteColor]
+        newPalette.colors[colorIndex] = c.colors[colorIndex]
     }
     return newPalette
 }
