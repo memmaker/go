@@ -17,6 +17,10 @@ func MustOpen(filename string) io.ReadCloser {
     open, _ := os.Open(filename)
     return open
 }
+func MustCreate(filename string) io.WriteCloser {
+    open, _ := os.Create(filename)
+    return open
+}
 
 func FileExists(filename string) bool {
     _, err := os.Stat(filename)
