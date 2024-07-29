@@ -90,7 +90,7 @@ func colorToString(paletteColor color.RGBA) string {
 
 func NewPaletteFromFileOrDefault(filename string) ColorPalette {
     paletteFile, openErr := os.Open(filename)
-    if openErr != nil {
+    if openErr == nil {
         defer paletteFile.Close()
     }
     return ReadPaletteFileOrDefault(paletteFile)
@@ -118,21 +118,22 @@ func NewPaletteFromNamedColors(colors []NamedColor) ColorPalette {
 
 func NewDefaultPalette() ColorPalette {
     return NewPaletteFromNamedColors([]NamedColor{
-        {"black", color.RGBA{0, 0, 0, 255}},
-        {"white", color.RGBA{255, 255, 255, 255}},
-        {"red", color.RGBA{255, 0, 0, 255}},
-        {"green", color.RGBA{0, 255, 0, 255}},
-        {"blue", color.RGBA{0, 0, 255, 255}},
+        {"black", color.RGBA{A: 255}},
+        {"white", color.RGBA{R: 255, G: 255, B: 255, A: 255}},
+        {"red", color.RGBA{R: 255, A: 255}},
+        {"green", color.RGBA{G: 255, A: 255}},
+        {"blue", color.RGBA{B: 255, A: 255}},
     })
 }
+
 func recordToPalette(record recfile.Record) ColorPalette {
     names := make(map[string]int)
     colors := make([]NamedColor, len(record))
-    for _, field := range record {
+    for idx, field := range record {
         colorName := strings.ToLower(field.Name) // case insensitive
         colorValue := field.AsRGB("|")
         names[colorName] = len(colors)
-        colors = append(colors, NamedColor{colorName, colorValue})
+        colors[idx] = NamedColor{colorName, colorValue}
     }
     return ColorPalette{names, colors}
 }
