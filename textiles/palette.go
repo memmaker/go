@@ -29,7 +29,9 @@ func (c ColorPalette) Get(name string) color.RGBA {
     }
     return color.RGBA{}
 }
-
+func (c ColorPalette) Count() int {
+    return len(c.colors)
+}
 func (c ColorPalette) WithColorChanged(index int, rgba color.RGBA) ColorPalette {
     newColors := make([]NamedColor, len(c.colors))
     copy(newColors, c.colors)
