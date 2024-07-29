@@ -6,6 +6,7 @@ import (
     "github.com/memmaker/go/recfile"
     "image/color"
     "io"
+    "os"
     "strings"
 )
 
@@ -86,10 +87,12 @@ func colorToString(paletteColor color.RGBA) string {
     return fmt.Sprintf("%d | %d | %d", paletteColor.R, paletteColor.G, paletteColor.B)
 }
 
-func NewPaletteFromFile(filename string) ColorPalette {
-    openFile := fxtools.MustOpen(filename)
-    defer openFile.Close()
-    return ReadPaletteFile(openFile)
+func NewPaletteFromFileOrDefault(filename string) ColorPalette {
+    paletteFile, openErr := os.Open(filename)
+    if openErr != nil {
+        defer paletteFile.Close()
+    }
+    return ReadPaletteFileOrDefault(paletteFile)
 }
 
 func ReadPaletteFile(file io.Reader) ColorPalette {
