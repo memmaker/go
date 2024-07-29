@@ -2,6 +2,7 @@ package textiles
 
 import (
     "fmt"
+    "github.com/memmaker/go/fxtools"
     "github.com/memmaker/go/recfile"
     "image/color"
     "io"
@@ -66,16 +67,29 @@ func (c ColorPalette) AsNamedColors() []NamedColor {
 func (c ColorPalette) IsValidIndex(index int) bool {
     return index >= 0 && index < len(c.colors)
 }
-func WritePaletteFile(file io.StringWriter, palette ColorPalette) error {
+
+func (c ColorPalette) ToWriter(file io.StringWriter) error {
     colorRecord := recfile.Record{}
-    for _, namedColor := range palette.AsNamedColors() {
+    for _, namedColor := range c.AsNamedColors() {
         colorRecord = append(colorRecord, recfile.Field{Name: namedColor.Name, Value: colorToString(namedColor.Color)})
     }
     return recfile.Write(file, []recfile.Record{colorRecord})
 }
 
+func (c ColorPalette) ToFile(filename string) error {
+    outfile := fxtools.MustCreate(filename)
+    defer outfile.Close()
+    return c.ToWriter(outfile)
+}
+
 func colorToString(paletteColor color.RGBA) string {
     return fmt.Sprintf("%d | %d | %d", paletteColor.R, paletteColor.G, paletteColor.B)
+}
+
+func NewPaletteFromFile(filename string) ColorPalette {
+    openFile := fxtools.MustOpen(filename)
+    defer openFile.Close()
+    return ReadPaletteFile(openFile)
 }
 
 func ReadPaletteFile(file io.Reader) ColorPalette {
