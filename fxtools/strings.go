@@ -1,8 +1,8 @@
 package fxtools
 
 import (
-    "RogueUI/geometry"
     "fmt"
+    "github.com/memmaker/go/geometry"
     "strings"
 )
 
