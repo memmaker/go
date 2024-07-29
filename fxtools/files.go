@@ -7,19 +7,18 @@ import (
     "path"
 )
 
-func MustLoad(open *os.File, err error) io.ReaderAt {
+func MustLoad(open *os.File, err error) *os.File {
     if err != nil {
         panic(err)
     }
     return open
 }
-func MustOpen(filename string) io.ReadCloser {
-    open, _ := os.Open(filename)
-    return open
+func MustOpen(filename string) *os.File {
+    return MustLoad(os.Open(filename))
 }
-func MustCreate(filename string) io.WriteCloser {
-    open, _ := os.Create(filename)
-    return open
+
+func MustCreate(filename string) *os.File {
+    return MustLoad(os.Create(filename))
 }
 
 func FileExists(filename string) bool {
