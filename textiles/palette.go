@@ -30,6 +30,13 @@ func (c ColorPalette) Get(name string) color.RGBA {
     return color.RGBA{}
 }
 
+func (c ColorPalette) WithColorChanged(index int, rgba color.RGBA) ColorPalette {
+    newColors := make([]NamedColor, len(c.colors))
+    copy(newColors, c.colors)
+    newColors[index].Color = rgba
+    return NewPaletteFromNamedColors(newColors)
+}
+
 func (c ColorPalette) WithColorRenamed(oldName, newName string) ColorPalette {
     var newPalette ColorPalette
     for name, paletteColor := range c.names {
