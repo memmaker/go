@@ -51,7 +51,26 @@ func ReadPaletteFile(file io.Reader) ColorPalette {
     records := recfile.Read(file)
     return recordToPalette(records[0])
 }
+func ReadPaletteFileOrDefault(file io.Reader) ColorPalette {
+    records := recfile.Read(file)
+    if len(records) == 0 {
+        return NewDefaultPalette()
+    }
+    return recordToPalette(records[0])
+}
 
+func NewDefaultPalette() ColorPalette {
+    return ColorPalette{
+        "black":   color.RGBA{0, 0, 0, 255},
+        "red":     color.RGBA{255, 0, 0, 255},
+        "green":   color.RGBA{0, 255, 0, 255},
+        "yellow":  color.RGBA{255, 255, 0, 255},
+        "blue":    color.RGBA{0, 0, 255, 255},
+        "magenta": color.RGBA{255, 0, 255, 255},
+        "cyan":    color.RGBA{0, 255, 255, 255},
+        "white":   color.RGBA{255, 255, 255, 255},
+    }
+}
 func recordToPalette(record recfile.Record) ColorPalette {
     colors := make(map[string]color.RGBA)
     for _, field := range record {
