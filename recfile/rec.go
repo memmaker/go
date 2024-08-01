@@ -169,7 +169,15 @@ func (r Record) ToValueList() []string {
 	}
 	return result
 }
-
+func (r Record) WithKeyValue(key, value string) Record {
+	for i, field := range r {
+		if field.Name == key {
+			r[i].Value = value
+			return r
+		}
+	}
+	return append(r, Field{Name: key, Value: value})
+}
 func (r Record) ToFixedSizeValueList(fieldNamesInOrder []string) []string {
 	var result []string
 	asMap := r.ToMap("|")
