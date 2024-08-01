@@ -129,10 +129,11 @@ func NewDefaultPalette() ColorPalette {
 func recordToPalette(record recfile.Record) ColorPalette {
     names := make(map[string]int)
     colors := make([]NamedColor, len(record))
+
     for idx, field := range record {
         colorName := strings.ToLower(field.Name) // case insensitive
         colorValue := field.AsRGB("|")
-        names[colorName] = len(colors)
+        names[colorName] = idx
         colors[idx] = NamedColor{colorName, colorValue}
     }
     return ColorPalette{names, colors}
