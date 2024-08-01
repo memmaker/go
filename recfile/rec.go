@@ -148,7 +148,13 @@ func (d DataMap) GetIntOrDefault(key string, defaultValue int) int {
 	}
 	return defaultValue
 }
-
+func (r Record) String() string {
+	result := ""
+	for _, field := range r {
+		result += field.String() + "\n"
+	}
+	return result
+}
 func (r Record) ToMap(listSeperator string) DataMap {
 	m := make(map[string]string, len(r))
 	for _, field := range r {
