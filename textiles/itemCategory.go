@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"io"
 	"strconv"
+	"strings"
 )
 
 type ItemCategory struct {
@@ -33,7 +34,7 @@ func ReadItemCategoriesFile(reader io.Reader, palette ColorPalette) map[string]I
 	categories := make(map[string]ItemCategory, len(records))
 	for _, record := range records {
 		category := recordToCategory(record, palette)
-		categories[category.Name] = category
+		categories[strings.ToLower(category.Name)] = category
 	}
 	return categories
 }
