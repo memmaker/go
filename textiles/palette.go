@@ -84,6 +84,15 @@ func (c ColorPalette) ToFile(filename string) error {
     return c.ToWriter(outfile)
 }
 
+func (c ColorPalette) GetIndexOfColor(rgba color.RGBA) int {
+    for i, namedColor := range c.colors {
+        if namedColor.Color == rgba {
+            return i
+        }
+    }
+    return -1
+}
+
 func colorToString(paletteColor color.RGBA) string {
     return fmt.Sprintf("%d | %d | %d", paletteColor.R, paletteColor.G, paletteColor.B)
 }

@@ -3,6 +3,7 @@ package textiles
 import (
     "github.com/memmaker/go/recfile"
     "io"
+    "strconv"
 )
 
 type ItemCategory struct {
@@ -10,11 +11,12 @@ type ItemCategory struct {
     Icon TextIcon
 }
 
-func ReadItemCategoriesFile(reader io.Reader, palette ColorPalette) []ItemCategory {
+func ReadItemCategoriesFile(reader io.Reader, palette ColorPalette) map[string]ItemCategory {
     records := recfile.Read(reader)
-    categories := make([]ItemCategory, len(records))
-    for i, record := range records {
-        categories[i] = recordToCategory(record, palette)
+    categories := make(map[string]ItemCategory, len(records))
+    for _, record := range records {
+        category := recordToCategory(record, palette)
+        categories[category.Name] = category
     }
     return categories
 }
@@ -34,4 +36,21 @@ func recordToCategory(record recfile.Record, palette ColorPalette) ItemCategory 
         }
     }
     return category
+}
+
+func WriteItemCategoriesFile(writer io.StringWriter, categories map[string]ItemCategory, palette ColorPalette) error {
+    records := make([]recfile.Record, 0, len(categories))
+    for _, category := range categories {
+        records = append(records, categoryToRecord(category, palette))
+    }
+    return recfile.Write(writer, records)
+}
+
+func categoryToRecord(category ItemCategory, palette ColorPalette) recfile.Record {
+    record := recfile.Record{}
+    record = append(record, recfile.Field{Name: "Name", Value: category.Name})
+    record = append(record, recfile.Field{Name: "Icon", Value: string(category.Icon.Char)})
+    record = append(record, recfile.Field{Name: "Foreground", Value: strconv.Itoa(palette.GetIndexOfColor(category.Icon.Foreground))})
+    record = append(record, recfile.Field{Name: "Background", Value: strconv.Itoa(palette.GetIndexOfColor(category.Icon.Background))})
+    return record
 }
