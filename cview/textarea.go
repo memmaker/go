@@ -204,12 +204,6 @@ type TextArea struct {
 	// The text to be shown in the text area when it is empty.
 	placeholder string
 
-	// The label text shown, usually when part of a form.
-	label string
-
-	// The width of the text area's label.
-	labelWidth int
-
 	// Styles:
 
 	// The label style.
@@ -788,29 +782,6 @@ func (t *TextArea) SetPlaceholder(placeholder string) *TextArea {
 	return t
 }
 
-// SetLabel sets the text to be displayed before the text area.
-func (t *TextArea) SetLabel(label string) *TextArea {
-	t.label = label
-	return t
-}
-
-// GetLabel returns the text to be displayed before the text area.
-func (t *TextArea) GetLabel() string {
-	return t.label
-}
-
-// SetLabelWidth sets the screen width of the label. A value of 0 will cause the
-// primitive to use the width of the label string.
-func (t *TextArea) SetLabelWidth(width int) *TextArea {
-	t.labelWidth = width
-	return t
-}
-
-// GetLabelWidth returns the screen width of the label.
-func (t *TextArea) GetLabelWidth() int {
-	return t.labelWidth
-}
-
 // SetSize sets the screen size of the input element of the text area. The input
 // element is always located next to the label which is always located in the
 // top left corner. If any of the values are 0 or larger than the available
@@ -1136,7 +1107,7 @@ func (t *TextArea) replace(deleteStart, deleteEnd [3]int, insert string, continu
 
 // Draw draws this primitive onto the screen.
 func (t *TextArea) Draw(screen tcell.Screen) {
-	t.Box.DrawForSubclass(screen, t)
+	t.Box.Draw(screen)
 
 	// Prepare
 	x, y, width, height := t.GetInnerRect()
@@ -1146,17 +1117,6 @@ func (t *TextArea) Draw(screen tcell.Screen) {
 	columnOffset := t.columnOffset
 	if t.wrap {
 		columnOffset = 0
-	}
-
-	// Draw label.
-	if t.labelWidth > 0 {
-		labelWidth := t.labelWidth
-		if labelWidth > width {
-			labelWidth = width
-		}
-		PrintStyle(screen, []byte(t.label), x, y, labelWidth, AlignLeft, t.labelStyle)
-		x += labelWidth
-		width -= labelWidth
 	}
 
 	// What's the space for the input element?
@@ -2330,12 +2290,7 @@ func (t *TextArea) MouseHandler() func(action MouseAction, event *tcell.EventMou
 			}()
 		}
 
-		// Turn mouse coordinates into text coordinates.
-		labelWidth := t.labelWidth
-		if labelWidth == 0 && t.label != "" {
-			labelWidth = TaggedStringWidth(t.label)
-		}
-		column := x - rectX - labelWidth
+		column := x - rectX
 		row := y - rectY
 		if !t.wrap {
 			column += t.columnOffset
