@@ -1,24 +1,23 @@
 package textiles
 
 import (
+	"github.com/memmaker/go/foundation"
 	"github.com/memmaker/go/recfile"
-	"image/color"
 	"io"
-	"strconv"
 	"strings"
 )
 
 type ItemCategory struct {
 	Name string
-	Icon TextIcon
+	Icon foundation.NamedColorChar
 }
 
-func (c ItemCategory) WithForeground(rgba color.RGBA) ItemCategory {
-	c.Icon.Foreground = rgba
+func (c ItemCategory) WithForeground(rgba string) ItemCategory {
+	c.Icon.Fg = rgba
 	return c
 }
-func (c ItemCategory) WithBackground(rgba color.RGBA) ItemCategory {
-	c.Icon.Background = rgba
+func (c ItemCategory) WithBackground(rgba string) ItemCategory {
+	c.Icon.Bg = rgba
 	return c
 }
 func (c ItemCategory) WithIconChar(char rune) ItemCategory {
@@ -48,9 +47,9 @@ func recordToCategory(record recfile.Record, palette ColorPalette) ItemCategory 
 		case "Icon":
 			category.Icon.Char = []rune(field.Value)[0]
 		case "Foreground":
-			category.Icon.Foreground = palette.Get(field.Value)
+			category.Icon.Fg = field.Value
 		case "Background":
-			category.Icon.Background = palette.Get(field.Value)
+			category.Icon.Bg = field.Value
 		}
 	}
 	return category
@@ -68,7 +67,7 @@ func categoryToRecord(category ItemCategory, palette ColorPalette) recfile.Recor
 	record := recfile.Record{}
 	record = append(record, recfile.Field{Name: "Name", Value: category.Name})
 	record = append(record, recfile.Field{Name: "Icon", Value: string(category.Icon.Char)})
-	record = append(record, recfile.Field{Name: "Foreground", Value: strconv.Itoa(palette.GetIndexOfColor(category.Icon.Foreground))})
-	record = append(record, recfile.Field{Name: "Background", Value: strconv.Itoa(palette.GetIndexOfColor(category.Icon.Background))})
+	record = append(record, recfile.Field{Name: "Foreground", Value: category.Icon.Fg})
+	record = append(record, recfile.Field{Name: "Background", Value: category.Icon.Bg})
 	return record
 }
