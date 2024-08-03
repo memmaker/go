@@ -570,3 +570,75 @@ func (b *Box) GetBorderPadding() (top, bottom, left, right int) {
 func (b *Box) SetBorderPadding(top, bottom, left, right int) {
 	b.SetPadding(top, bottom, left, right)
 }
+func (b *Box) WrapPasteHandler(pasteHandler func(string, func(p Primitive))) func(string, func(p Primitive)) {
+	return func(text string, setFocus func(p Primitive)) {
+		if pasteHandler != nil {
+			pasteHandler(text, setFocus)
+		}
+	}
+}
+
+func (b *Box) PasteHandler() func(pastedText string, setFocus func(p Primitive)) {
+	return b.WrapPasteHandler(nil)
+}
+func (b *Box) DrawForSubclass(screen tcell.Screen, p Primitive) {
+	// Don't draw anything if there is no space.
+	if b.width <= 0 || b.height <= 0 {
+		return
+	}
+
+	// Fill background.
+	background := tcell.StyleDefault.Background(b.backgroundColor)
+	for y := b.y; y < b.y+b.height; y++ {
+		for x := b.x; x < b.x+b.width; x++ {
+			screen.SetContent(x, y, ' ', nil, background)
+		}
+	}
+
+	// Draw border.
+	if b.border && b.width >= 2 && b.height >= 2 {
+		var vertical, horizontal, topLeft, topRight, bottomLeft, bottomRight rune
+		horizontal = Borders.Horizontal
+		vertical = Borders.Vertical
+		topLeft = Borders.TopLeft
+		topRight = Borders.TopRight
+		bottomLeft = Borders.BottomLeft
+		bottomRight = Borders.BottomRight
+		borderStyle := tcell.StyleDefault.Foreground(b.borderColor).Attributes(b.borderAttributes).Background(b.backgroundColor)
+		for x := b.x + 1; x < b.x+b.width-1; x++ {
+			screen.SetContent(x, b.y, horizontal, nil, borderStyle)
+			screen.SetContent(x, b.y+b.height-1, horizontal, nil, borderStyle)
+		}
+		for y := b.y + 1; y < b.y+b.height-1; y++ {
+			screen.SetContent(b.x, y, vertical, nil, borderStyle)
+			screen.SetContent(b.x+b.width-1, y, vertical, nil, borderStyle)
+		}
+		screen.SetContent(b.x, b.y, topLeft, nil, borderStyle)
+		screen.SetContent(b.x+b.width-1, b.y, topRight, nil, borderStyle)
+		screen.SetContent(b.x, b.y+b.height-1, bottomLeft, nil, borderStyle)
+		screen.SetContent(b.x+b.width-1, b.y+b.height-1, bottomRight, nil, borderStyle)
+
+		// Draw title.
+		if string(b.title) != "" && b.width >= 4 {
+			printed, _ := Print(screen, b.title, b.x+1, b.y, b.width-2, b.titleAlign, b.titleColor)
+			if len(b.title)-printed > 0 && printed > 0 {
+				xEllipsis := b.x + b.width - 2
+				if b.titleAlign == AlignRight {
+					xEllipsis = b.x + 1
+				}
+				_, _, style, _ := screen.GetContent(xEllipsis, b.y)
+				fg, _, _ := style.Decompose()
+				Print(screen, []byte(string(SemigraphicsHorizontalEllipsis)), xEllipsis, b.y, 1, AlignLeft, fg)
+			}
+		}
+	}
+
+	// Call custom draw function.
+	if b.draw != nil {
+		b.innerX, b.innerY, b.innerWidth, b.innerHeight = b.draw(screen, b.x, b.y, b.width, b.height)
+	} else {
+		// Remember the inner rect.
+		b.innerX = -1
+		b.innerX, b.innerY, b.innerWidth, b.innerHeight = b.GetInnerRect()
+	}
+}

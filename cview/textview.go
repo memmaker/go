@@ -357,8 +357,9 @@ func (t *TextView) SetBytes(text []byte) {
 
 // SetText sets the text of this text view to the provided string. Previously
 // contained text will be removed.
-func (t *TextView) SetText(text string) {
+func (t *TextView) SetText(text string) *TextView {
 	t.SetBytes([]byte(text))
+	return t
 }
 
 // GetBytes returns the current text of this text view. If "stripTags" is set
@@ -1408,4 +1409,12 @@ func (t *TextView) MouseHandler() func(action MouseAction, event *tcell.EventMou
 
 		return
 	})
+}
+
+func (t *TextView) SetTextStyle(style tcell.Style) *TextView {
+	t.Lock()
+	defer t.Unlock()
+
+	t.textColor, t.backgroundColor, _ = style.Decompose()
+	return t
 }
