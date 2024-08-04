@@ -12,6 +12,10 @@ type ClassIcon struct {
 	Icon foundation.NamedColorChar
 }
 
+func (c ClassIcon) WithIcon(icon foundation.NamedColorChar) ClassIcon {
+	c.Icon = icon
+	return c
+}
 func (c ClassIcon) WithForeground(rgba string) ClassIcon {
 	c.Icon.Fg = rgba
 	return c
