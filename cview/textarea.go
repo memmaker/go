@@ -2334,7 +2334,7 @@ func (t *TextArea) MouseHandler() func(action MouseAction, event *tcell.EventMou
 		case MouseScrollDown:
 			t.rowOffset++
 			if t.rowOffset >= len(t.lineStarts) {
-				t.rowOffset = len(t.lineStarts) - 1
+				t.rowOffset = t.getMaxScrollOffset()
 				if t.rowOffset < 0 {
 					t.rowOffset = 0
 				}
@@ -2370,4 +2370,9 @@ func (t *TextArea) PasteHandler() func(pastedText string, setFocus func(p Primit
 		t.findCursor(true, row)
 		t.selectionStart = t.cursor
 	})
+}
+
+func (t *TextArea) getMaxScrollOffset() int {
+	return len(t.lineStarts) - t.lastHeight
+	//return len(t.lineStarts) - 1
 }
