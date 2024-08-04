@@ -7,39 +7,39 @@ import (
 	"strings"
 )
 
-type ItemCategory struct {
+type ClassIcon struct {
 	Name string
 	Icon foundation.NamedColorChar
 }
 
-func (c ItemCategory) WithForeground(rgba string) ItemCategory {
+func (c ClassIcon) WithForeground(rgba string) ClassIcon {
 	c.Icon.Fg = rgba
 	return c
 }
-func (c ItemCategory) WithBackground(rgba string) ItemCategory {
+func (c ClassIcon) WithBackground(rgba string) ClassIcon {
 	c.Icon.Bg = rgba
 	return c
 }
-func (c ItemCategory) WithIconChar(char rune) ItemCategory {
+func (c ClassIcon) WithIconChar(char rune) ClassIcon {
 	c.Icon.Char = char
 	return c
 }
-func (c ItemCategory) WithName(name string) ItemCategory {
+func (c ClassIcon) WithName(name string) ClassIcon {
 	c.Name = name
 	return c
 }
-func ReadItemCategoriesFile(reader io.Reader, palette ColorPalette) map[string]ItemCategory {
+func ReadClassIcons(reader io.Reader, palette ColorPalette) map[string]ClassIcon {
 	records := recfile.Read(reader)
-	categories := make(map[string]ItemCategory, len(records))
+	categories := make(map[string]ClassIcon, len(records))
 	for _, record := range records {
-		category := recordToCategory(record, palette)
+		category := NewClassIconFromRecord(record, palette)
 		categories[strings.ToLower(category.Name)] = category
 	}
 	return categories
 }
 
-func recordToCategory(record recfile.Record, palette ColorPalette) ItemCategory {
-	category := ItemCategory{}
+func NewClassIconFromRecord(record recfile.Record, palette ColorPalette) ClassIcon {
+	category := ClassIcon{}
 	for _, field := range record {
 		switch field.Name {
 		case "Name":
@@ -55,15 +55,15 @@ func recordToCategory(record recfile.Record, palette ColorPalette) ItemCategory 
 	return category
 }
 
-func WriteItemCategoriesFile(writer io.StringWriter, categories map[string]ItemCategory, palette ColorPalette) error {
+func WriteClassIcons(writer io.StringWriter, categories map[string]ClassIcon, palette ColorPalette) error {
 	records := make([]recfile.Record, 0, len(categories))
 	for _, category := range categories {
-		records = append(records, categoryToRecord(category, palette))
+		records = append(records, ClassIconToRecord(category, palette))
 	}
 	return recfile.Write(writer, records)
 }
 
-func categoryToRecord(category ItemCategory, palette ColorPalette) recfile.Record {
+func ClassIconToRecord(category ClassIcon, palette ColorPalette) recfile.Record {
 	record := recfile.Record{}
 	record = append(record, recfile.Field{Name: "Name", Value: category.Name})
 	record = append(record, recfile.Field{Name: "Icon", Value: string(category.Icon.Char)})
