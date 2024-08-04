@@ -1986,7 +1986,7 @@ func (t *TextArea) InputHandler() func(event *tcell.EventKey, setFocus func(p Pr
 				if event.Modifiers()&tcell.ModShift == 0 {
 					t.selectionStart = t.cursor
 				}
-			} else {
+			} else if t.needsVerticalScrolling() {
 				// Just scroll.
 				t.rowOffset++
 				if t.rowOffset >= len(t.lineStarts) {
@@ -2008,7 +2008,7 @@ func (t *TextArea) InputHandler() func(event *tcell.EventKey, setFocus func(p Pr
 				if event.Modifiers()&tcell.ModShift == 0 {
 					t.selectionStart = t.cursor
 				}
-			} else {
+			} else if t.needsVerticalScrolling() {
 				// Just scroll.
 				t.rowOffset--
 				if t.rowOffset < 0 {
@@ -2327,19 +2327,23 @@ func (t *TextArea) MouseHandler() func(action MouseAction, event *tcell.EventMou
 			t.moveWordRight(true, false)
 			consumed = true
 		case MouseScrollUp:
-			if t.rowOffset > 0 {
-				t.rowOffset--
-			}
-			consumed = true
-		case MouseScrollDown:
-			t.rowOffset++
-			if t.rowOffset >= len(t.lineStarts) {
-				t.rowOffset = t.getMaxScrollOffset()
-				if t.rowOffset < 0 {
-					t.rowOffset = 0
+			if t.needsVerticalScrolling() {
+				if t.rowOffset > 0 {
+					t.rowOffset--
 				}
+				consumed = true
 			}
-			consumed = true
+		case MouseScrollDown:
+			if t.needsVerticalScrolling() {
+				t.rowOffset++
+				if t.rowOffset >= len(t.lineStarts) {
+					t.rowOffset = t.getMaxScrollOffset()
+					if t.rowOffset < 0 {
+						t.rowOffset = 0
+					}
+				}
+				consumed = true
+			}
 		case MouseScrollLeft:
 			if t.columnOffset > 0 {
 				t.columnOffset--
@@ -2375,4 +2379,8 @@ func (t *TextArea) PasteHandler() func(pastedText string, setFocus func(p Primit
 func (t *TextArea) getMaxScrollOffset() int {
 	return len(t.lineStarts) - t.lastHeight
 	//return len(t.lineStarts) - 1
+}
+
+func (t *TextArea) needsVerticalScrolling() bool {
+	return len(t.lineStarts) > t.lastHeight
 }
