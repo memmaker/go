@@ -1989,10 +1989,10 @@ func (t *TextArea) InputHandler() func(event *tcell.EventKey, setFocus func(p Pr
 			} else if t.needsVerticalScrolling() {
 				// Just scroll.
 				t.rowOffset++
-				if t.rowOffset >= len(t.lineStarts) {
+				if t.rowOffset > t.getMaxScrollOffset() {
 					t.extendLines(t.lastWidth, t.rowOffset)
-					if t.rowOffset >= len(t.lineStarts) {
-						t.rowOffset = len(t.lineStarts) - 1
+					if t.rowOffset > t.getMaxScrollOffset() {
+						t.rowOffset = t.getMaxScrollOffset()
 						if t.rowOffset < 0 {
 							t.rowOffset = 0
 						}
@@ -2336,7 +2336,7 @@ func (t *TextArea) MouseHandler() func(action MouseAction, event *tcell.EventMou
 		case MouseScrollDown:
 			if t.needsVerticalScrolling() {
 				t.rowOffset++
-				if t.rowOffset >= len(t.lineStarts) {
+				if t.rowOffset > t.getMaxScrollOffset() {
 					t.rowOffset = t.getMaxScrollOffset()
 					if t.rowOffset < 0 {
 						t.rowOffset = 0
