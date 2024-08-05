@@ -199,13 +199,13 @@ func (r Record) ToFixedSizeValueList(fieldNamesInOrder []string) []string {
 	return result
 }
 
-func (r Record) FindValueForKey(key string) string {
+func (r Record) FindField(key string) (Field, bool) {
 	for _, field := range r {
 		if field.Name == key {
-			return field.Value
+			return field, true
 		}
 	}
-	return ""
+	return Field{}, false
 }
 
 func (r Record) WithPoppedValue(key string) (Record, string) {
