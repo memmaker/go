@@ -36,8 +36,7 @@ func (c IconRecord) WithName(name string) IconRecord {
 }
 func (c IconRecord) ToRecordWithPosition(mapPos geometry.Point) recfile.Record {
 	record := c.ToRecord()
-	record = append(record, recfile.Field{Name: "Position", Value: mapPos.Encode()})
-	return record
+	return record.WithKeyValue("Position", mapPos.Encode())
 }
 
 func (c IconRecord) String() string {
