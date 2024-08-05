@@ -6,6 +6,7 @@ import (
 	"github.com/memmaker/go/recfile"
 	"image/color"
 	"io"
+	"math/rand"
 	"os"
 	"strings"
 )
@@ -86,6 +87,15 @@ func (c ColorPalette) ToFile(filename string) error {
 func (c ColorPalette) GetColorIndex(name string) int {
 	return c.names[name]
 }
+func (c ColorPalette) GetColorAsFgCode(name string) string {
+	return RGBAToFgColorCode(c.Get(name))
+}
+func (c ColorPalette) GetColorAsBgCode(name string) string {
+	return RGBAToBgColorCode(c.Get(name))
+}
+func (c ColorPalette) GetColorCode(fg, bg string) string {
+	return RGBAToColorCodes(c.Get(fg), c.Get(bg))
+}
 func (c ColorPalette) GetIndexOfColor(rgba color.RGBA) int {
 	for i, namedColor := range c.colors {
 		if namedColor.Color == rgba {
@@ -94,7 +104,9 @@ func (c ColorPalette) GetIndexOfColor(rgba color.RGBA) int {
 	}
 	return -1
 }
-
+func (c ColorPalette) GetRandomColor() color.RGBA {
+	return c.colors[rand.Intn(len(c.colors))].Color
+}
 func colorToString(paletteColor color.RGBA) string {
 	return fmt.Sprintf("%d | %d | %d", paletteColor.R, paletteColor.G, paletteColor.B)
 }
@@ -109,14 +121,14 @@ func NewPaletteFromFileOrDefault(filename string) ColorPalette {
 
 func ReadPaletteFile(file io.Reader) ColorPalette {
 	records := recfile.Read(file)
-	return recordToPalette(records[0])
+	return NewPaletteFromRecord(records[0])
 }
 func ReadPaletteFileOrDefault(file io.Reader) ColorPalette {
 	records := recfile.Read(file)
 	if len(records) == 0 {
 		return NewDefaultPalette()
 	}
-	return recordToPalette(records[0])
+	return NewPaletteFromRecord(records[0])
 }
 
 func NewPaletteFromNamedColors(colors []NamedColor) ColorPalette {
@@ -137,7 +149,7 @@ func NewDefaultPalette() ColorPalette {
 	})
 }
 
-func recordToPalette(record recfile.Record) ColorPalette {
+func NewPaletteFromRecord(record recfile.Record) ColorPalette {
 	names := make(map[string]int)
 	colors := make([]NamedColor, len(record))
 
@@ -148,4 +160,19 @@ func recordToPalette(record recfile.Record) ColorPalette {
 		colors[idx] = NamedColor{colorName, colorValue}
 	}
 	return ColorPalette{names, colors}
+}
+
+func RGBAToFgColorCode(color color.RGBA) string {
+	hexFormat := fmt.Sprintf("#%02x%02x%02x", color.R, color.G, color.B)
+	return fmt.Sprintf("[%s]", hexFormat)
+}
+func RGBAToColorCodes(fg, bg color.RGBA) string {
+	bgHex := fmt.Sprintf("#%02x%02x%02x", bg.R, bg.G, bg.B)
+	fgHex := fmt.Sprintf("#%02x%02x%02x", fg.R, fg.G, fg.B)
+
+	return fmt.Sprintf("[%s:%s]", fgHex, bgHex)
+}
+func RGBAToBgColorCode(color color.RGBA) string {
+	hexFormat := fmt.Sprintf("#%02x%02x%02x", color.R, color.G, color.B)
+	return fmt.Sprintf("[:%s]", hexFormat)
 }
