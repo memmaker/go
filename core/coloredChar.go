@@ -1,4 +1,4 @@
-package foundation
+package core
 
 type NamedColorChar struct {
 	Char rune

@@ -33,9 +33,9 @@ func recordToTile(record recfile.Record, palette ColorPalette) TextTile {
 		case "Char":
 			tile.Icon.Char = []rune(field.Value)[0]
 		case "Foreground":
-			tile.Icon.Foreground = palette.Get(field.Value)
+			tile.Icon.Fg = palette.Get(field.Value)
 		case "Background":
-			tile.Icon.Background = palette.Get(field.Value)
+			tile.Icon.Bg = palette.Get(field.Value)
 		case "IsWalkable":
 			tile.IsWalkable = field.AsBool()
 		case "IsTransparent":

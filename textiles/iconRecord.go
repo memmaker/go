@@ -1,7 +1,7 @@
 package textiles
 
 import (
-	"github.com/memmaker/go/foundation"
+	"github.com/memmaker/go/core"
 	"github.com/memmaker/go/geometry"
 	"github.com/memmaker/go/recfile"
 	"io"
@@ -10,11 +10,11 @@ import (
 
 type IconRecord struct {
 	Name string
-	Icon foundation.NamedColorChar
+	Icon core.NamedColorChar
 	Meta recfile.Record
 }
 
-func (c IconRecord) WithIcon(icon foundation.NamedColorChar) IconRecord {
+func (c IconRecord) WithIcon(icon core.NamedColorChar) IconRecord {
 	c.Icon = icon
 	return c
 }
