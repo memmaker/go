@@ -208,6 +208,25 @@ func (r Record) FindField(key string) (Field, bool) {
 	return Field{}, false
 }
 
+func (r Record) FindValueForKeyIgnoreCase(key string) string {
+	key = strings.ToLower(key)
+	for _, field := range r {
+		if strings.ToLower(field.Name) == key {
+			return field.Value
+		}
+	}
+	return ""
+}
+func (r Record) FindFieldIgnoreCase(key string) (Field, bool) {
+	key = strings.ToLower(key)
+	for _, field := range r {
+		if strings.ToLower(field.Name) == key {
+			return field, true
+		}
+	}
+	return Field{}, false
+}
+
 func (r Record) WithPoppedValue(key string) (Record, string) {
 	for i, field := range r {
 		if field.Name == key {
