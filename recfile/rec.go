@@ -184,6 +184,17 @@ func (r Record) WithKeyValue(key, value string) Record {
 	}
 	return append(r, Field{Name: key, Value: value})
 }
+func (r Record) WithKeyValueIgnoreCase(key, value string) Record {
+	lowerKey := strings.ToLower(key)
+	for i, field := range r {
+		if strings.ToLower(field.Name) == lowerKey {
+			r[i].Name = key
+			r[i].Value = value
+			return r
+		}
+	}
+	return append(r, Field{Name: key, Value: value})
+}
 func (r Record) ToFixedSizeValueList(fieldNamesInOrder []string) []string {
 	var result []string
 	asMap := r.ToMap("|")
