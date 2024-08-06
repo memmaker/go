@@ -54,7 +54,8 @@ func (f Field) AsInt32() int32 {
 }
 
 func (f Field) AsBool() bool {
-	return f.Value == "true"
+	parseBool, _ := strconv.ParseBool(f.Value)
+	return parseBool
 }
 
 func (f Field) AsFloat() float64 {
