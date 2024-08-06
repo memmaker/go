@@ -43,7 +43,7 @@ func (t TextIcon) WithBold() TextIcon {
 }
 
 func (t TextIcon) HasBackground() bool {
-	return t.Bg.B == 255
+	return t.Bg.A == 255
 }
 
 func NewTextIconFromNamedColorChar(ncc core.NamedColorChar, palette ColorPalette) TextIcon {
