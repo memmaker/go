@@ -16,6 +16,11 @@ type TextTile struct {
     IsTransparent bool
 }
 
+func (t TextTile) WithIcon(icon TextIcon) TextTile {
+    t.Icon = icon
+    return t
+}
+
 func ReadTilesFile(reader io.Reader, palette ColorPalette) []TextTile {
     records := recfile.Read(reader)
     tiles := make([]TextTile, len(records))
@@ -27,6 +32,7 @@ func ReadTilesFile(reader io.Reader, palette ColorPalette) []TextTile {
 
 func recordToTile(record recfile.Record, palette ColorPalette) TextTile {
     tile := TextTile{}
+    var icon TextIcon
     for _, field := range record {
         switch field.Name {
         case "Name":
@@ -34,18 +40,18 @@ func recordToTile(record recfile.Record, palette ColorPalette) TextTile {
         case "Description":
             tile.Description = field.Value
         case "Char":
-            tile.Icon.Char = []rune(field.Value)[0]
+            icon.Char = []rune(field.Value)[0]
         case "Foreground":
-            tile.Icon.Fg = palette.Get(field.Value)
+            icon.Fg = palette.Get(field.Value)
         case "Background":
-            tile.Icon.Bg = palette.Get(field.Value)
+            icon.Bg = palette.Get(field.Value)
         case "IsWalkable":
             tile.IsWalkable = field.AsBool()
         case "IsTransparent":
             tile.IsTransparent = field.AsBool()
         }
     }
-    return tile
+    return tile.WithIcon(icon)
 }
 
 func SaveTileMap16(tiles []int16, dimension geometry.Point, filename string) error {
