@@ -185,6 +185,20 @@ func (r Record) WithKeyValue(key, value string) Record {
 	}
 	return append(r, Field{Name: key, Value: value})
 }
+func (r Record) WithoutFieldsIgnoreCase(keys ...string) Record {
+	fieldNameMap := make(map[string]bool, len(keys))
+	for _, key := range keys {
+		fieldNameMap[strings.ToLower(key)] = true
+	}
+	var result Record
+	for _, field := range r {
+		lowerKey := strings.ToLower(field.Name)
+		if _, ok := fieldNameMap[lowerKey]; !ok {
+			result = append(result, field)
+		}
+	}
+	return result
+}
 func (r Record) WithKeyValueIgnoreCase(key, value string) Record {
 	lowerKey := strings.ToLower(key)
 	for i, field := range r {

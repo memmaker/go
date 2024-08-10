@@ -16,6 +16,13 @@ func MustLoad(open *os.File, err error) *os.File {
 func MustOpen(filename string) *os.File {
 	return MustLoad(os.Open(filename))
 }
+func OpenOrEmpty(filename string) *os.File {
+	open, err := os.Open(filename)
+	if err != nil { // return fake file
+		return &os.File{}
+	}
+	return open
+}
 
 func MustCreate(filename string) *os.File {
 	return MustLoad(os.Create(filename))
