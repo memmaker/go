@@ -46,7 +46,11 @@ func (f Field) AsInt() int {
 }
 
 func (f Field) AsRune() rune {
-	return []rune(f.Value)[0]
+	runes := []rune(f.Value)
+	if len(runes) == 0 {
+		return ' '
+	}
+	return runes[0]
 }
 func (f Field) AsInt32() int32 {
 	value, _ := strconv.ParseInt(f.Value, 10, 32)

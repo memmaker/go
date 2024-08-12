@@ -6,6 +6,7 @@ import (
 	"github.com/memmaker/go/recfile"
 	"io"
 	"os"
+	"strings"
 )
 
 type TextTile struct {
@@ -33,18 +34,18 @@ func recordToTile(record recfile.Record, palette ColorPalette) TextTile {
 	tile := TextTile{}
 	var icon TextIcon
 	for _, field := range record {
-		switch field.Name {
-		case "Name":
+		switch strings.ToLower(field.Name) {
+		case "name":
 			tile.Name = field.Value
-		case "Char":
-			icon.Char = []rune(field.Value)[0]
-		case "Foreground":
+		case "char":
+			icon.Char = field.AsRune()
+		case "foreground":
 			icon.Fg = palette.Get(field.Value)
-		case "Background":
+		case "background":
 			icon.Bg = palette.Get(field.Value)
-		case "IsWalkable":
+		case "iswalkable":
 			tile.IsWalkable = field.AsBool()
-		case "IsTransparent":
+		case "istransparent":
 			tile.IsTransparent = field.AsBool()
 		}
 	}
