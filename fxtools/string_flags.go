@@ -1,6 +1,9 @@
 package fxtools
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 type StringFlags map[string]int
 
@@ -38,4 +41,8 @@ func (sf StringFlags) ToStringArray() []string {
 		}
 	}
 	return TableLayout(rows, []TextAlignment{AlignLeft, AlignRight})
+}
+
+func (sf StringFlags) String() string {
+	return strings.Join(sf.ToStringArray(), "\n")
 }
