@@ -48,16 +48,6 @@ func (p *Player) UnloadAllCues() {
 	}
 	p.loadedCues = make(map[string][]*beep.Buffer)
 }
-func (p *Player) LoadEnemyCuesFromDir(enemySfxDir string) {
-	entries, _ := os.ReadDir(enemySfxDir)
-	for _, entry := range entries {
-		if entry.IsDir() {
-			enemyName := entry.Name()
-			p.LoadCuesFromDir(path.Join(enemySfxDir, enemyName), "enemies")
-		}
-	}
-}
-
 func (p *Player) LoadCuesFromDir(dirName string, cuePrefix string) {
 	cueBase := path.Base(dirName)
 	if cuePrefix != "" {
