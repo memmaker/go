@@ -83,7 +83,7 @@ func lightScreen(screen tcell.Screen, screenCopy []StyledRune, w int, h int) boo
 }
 func lightScreenLocation(screen tcell.Screen, screenCopy []StyledRune, x int, y int, amount int32, w int, h int) bool {
 	// Get current screen content and style
-	icon, _, style, _ := screen.GetContent(x, y)
+	_, _, style, _ := screen.GetContent(x, y)
 	fg, bg, _ := style.Decompose()
 	currFgRed, currFgGreen, currFgBlue := fg.RGB()
 	currBgRed, currBgGreen, currBgBlue := bg.RGB()
@@ -112,7 +112,7 @@ func lightScreenLocation(screen tcell.Screen, screenCopy []StyledRune, x int, y 
 	hadWorkLeft := currFgRed < orgFgRed || currFgGreen < orgFgGreen || currFgBlue < orgFgBlue || currBgRed < orgBgRed || currBgGreen < orgBgGreen || currBgBlue < orgBgBlue
 
 	// Set the updated content on the screen
-	screen.SetContent(x, y, icon, nil, style.Background(tcell.NewRGBColor(int32(newBgRed), int32(newBgGreen), int32(newBgBlue))).Foreground(tcell.NewRGBColor(int32(newFgRed), int32(newFgGreen), int32(newFgBlue))))
+	screen.SetContent(x, y, copyRune.Icon, nil, style.Background(tcell.NewRGBColor(int32(newBgRed), int32(newBgGreen), int32(newBgBlue))).Foreground(tcell.NewRGBColor(int32(newFgRed), int32(newFgGreen), int32(newFgBlue))))
 
 	return hadWorkLeft
 }
