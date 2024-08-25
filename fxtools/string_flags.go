@@ -5,17 +5,23 @@ import (
 	"strings"
 )
 
-type StringFlags map[string]int
+type StringFlags struct {
+	underlying    map[string]int
+	changeHandler func(string, int)
+}
 
 func (sf StringFlags) Get(key string) int {
-	if val, ok := sf[key]; ok {
+	if val, ok := sf.underlying[key]; ok {
 		return val
 	}
 	return 0
 }
-
+func (sf StringFlags) SetChangeHandler(handler func(string, int)) {
+	sf.changeHandler = handler
+}
 func (sf StringFlags) Set(key string, val int) {
-	sf[key] = val
+	sf.underlying[key] = val
+	sf.onChange(key, val)
 }
 
 func (sf StringFlags) HasFlag(key string) bool {
@@ -24,18 +30,20 @@ func (sf StringFlags) HasFlag(key string) bool {
 
 func (sf StringFlags) SetFlag(key string) {
 	sf.Set(key, 1)
+	sf.onChange(key, 1)
 }
 
 func (sf StringFlags) ClearFlag(key string) {
-	delete(sf, key)
+	delete(sf.underlying, key)
+	sf.onChange(key, 0)
 }
 
 func (sf StringFlags) ToStringArray() []string {
-	if len(sf) == 0 {
+	if len(sf.underlying) == 0 {
 		return []string{}
 	}
 	var rows []TableRow
-	for key, val := range sf {
+	for key, val := range sf.underlying {
 		if val != 0 {
 			rows = append(rows, TableRow{Columns: []string{key, strconv.Itoa(val)}})
 		}
@@ -45,4 +53,10 @@ func (sf StringFlags) ToStringArray() []string {
 
 func (sf StringFlags) String() string {
 	return strings.Join(sf.ToStringArray(), "\n")
+}
+
+func (sf StringFlags) onChange(key string, val int) {
+	if sf.changeHandler != nil {
+		sf.changeHandler(key, val)
+	}
 }
