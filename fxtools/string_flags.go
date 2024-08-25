@@ -10,35 +10,38 @@ type StringFlags struct {
 	changeHandler func(string, int)
 }
 
-func (sf StringFlags) Get(key string) int {
+func NewStringFlags() *StringFlags {
+	return &StringFlags{underlying: make(map[string]int)}
+}
+func (sf *StringFlags) Get(key string) int {
 	if val, ok := sf.underlying[key]; ok {
 		return val
 	}
 	return 0
 }
-func (sf StringFlags) SetChangeHandler(handler func(string, int)) {
+func (sf *StringFlags) SetChangeHandler(handler func(string, int)) {
 	sf.changeHandler = handler
 }
-func (sf StringFlags) Set(key string, val int) {
+func (sf *StringFlags) Set(key string, val int) {
 	sf.underlying[key] = val
 	sf.onChange(key, val)
 }
 
-func (sf StringFlags) HasFlag(key string) bool {
+func (sf *StringFlags) HasFlag(key string) bool {
 	return sf.Get(key) != 0
 }
 
-func (sf StringFlags) SetFlag(key string) {
+func (sf *StringFlags) SetFlag(key string) {
 	sf.Set(key, 1)
 	sf.onChange(key, 1)
 }
 
-func (sf StringFlags) ClearFlag(key string) {
+func (sf *StringFlags) ClearFlag(key string) {
 	delete(sf.underlying, key)
 	sf.onChange(key, 0)
 }
 
-func (sf StringFlags) ToStringArray() []string {
+func (sf *StringFlags) ToStringArray() []string {
 	if len(sf.underlying) == 0 {
 		return []string{}
 	}
@@ -51,11 +54,11 @@ func (sf StringFlags) ToStringArray() []string {
 	return TableLayout(rows, []TextAlignment{AlignLeft, AlignRight})
 }
 
-func (sf StringFlags) String() string {
+func (sf *StringFlags) String() string {
 	return strings.Join(sf.ToStringArray(), "\n")
 }
 
-func (sf StringFlags) onChange(key string, val int) {
+func (sf *StringFlags) onChange(key string, val int) {
 	if sf.changeHandler != nil {
 		sf.changeHandler(key, val)
 	}
