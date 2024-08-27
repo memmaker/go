@@ -29,3 +29,7 @@ func StrBool(value string) bool {
 	parseBool, _ := strconv.ParseBool(value)
 	return parseBool
 }
+
+func FloatStr(value float64) string {
+	return strconv.FormatFloat(value, 'f', -1, 64)
+}

@@ -1,0 +1,11 @@
+%rec: MyRecord
+%rec: MyRecord
+
+Name: John Doe
+Age: 25
+Height: 5.9
+IsStudent: true
+Address_Street: 123 Main St
+Address_City: Anytown
+Address_Zip: 12345
+

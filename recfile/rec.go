@@ -379,7 +379,7 @@ func RecordFromSlice(data []string) Record {
 	return reader.End()["default"][0]
 }
 
-func Write(file io.StringWriter, records []Record) error {
+func Write(file io.Writer, records []Record) error {
 	return WriteMulti(file, map[string][]Record{"default": records})
 }
 func WriteCSV(output io.Writer, fieldNames []string, records []Record) {
@@ -391,7 +391,11 @@ func WriteCSV(output io.Writer, fieldNames []string, records []Record) {
 	}
 	csvWriter.Flush()
 }
-func WriteMulti(file io.StringWriter, recordsInCategories map[string][]Record) error {
+func WriteMulti(file io.Writer, recordsInCategories map[string][]Record) error {
+	writeString := func(s string) error {
+		_, err := file.Write([]byte(s))
+		return err
+	}
 	sanitizeFieldname := func(s string) string {
 		saneFieldname := strings.ReplaceAll(s, " ", "_")
 		if saneFieldname != s {
@@ -400,18 +404,18 @@ func WriteMulti(file io.StringWriter, recordsInCategories map[string][]Record) e
 		return saneFieldname
 	}
 	for recordCategory, records := range recordsInCategories {
-		_, catErr := file.WriteString(fmt.Sprintf("%%rec: %s\n\n", recordCategory))
+		catErr := writeString(fmt.Sprintf("%%rec: %s\n\n", recordCategory))
 		if catErr != nil {
 			return catErr
 		}
 		for _, record := range records {
 			for _, field := range record {
-				_, err := file.WriteString(sanitizeFieldname(field.Name) + ": " + field.EscapedValue() + "\n")
+				err := writeString(sanitizeFieldname(field.Name) + ": " + field.EscapedValue() + "\n")
 				if err != nil {
 					return err
 				}
 			}
-			_, err := file.WriteString("\n")
+			err := writeString("\n")
 			if err != nil {
 				return err
 			}
