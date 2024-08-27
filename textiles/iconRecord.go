@@ -62,7 +62,7 @@ func ReadIconRecords(reader io.Reader) []IconRecord {
 	return categories
 }
 
-func WriteIconRecordMap(writer io.StringWriter, categories map[string]IconRecord) error {
+func WriteIconRecordMap(writer io.Writer, categories map[string]IconRecord) error {
 	records := make([]recfile.Record, 0, len(categories))
 	for _, category := range categories {
 		records = append(records, category.ToRecord())
@@ -70,7 +70,7 @@ func WriteIconRecordMap(writer io.StringWriter, categories map[string]IconRecord
 	return recfile.Write(writer, records)
 }
 
-func WriteIconRecords(writer io.StringWriter, categories []IconRecord) error {
+func WriteIconRecords(writer io.Writer, categories []IconRecord) error {
 	records := make([]recfile.Record, 0, len(categories))
 	for _, category := range categories {
 		records = append(records, category.ToRecord())
