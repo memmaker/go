@@ -71,7 +71,7 @@ func (c ColorPalette) IsValidIndex(index int) bool {
 	return index >= 0 && index < len(c.colors)
 }
 
-func (c ColorPalette) ToWriter(file io.StringWriter) error {
+func (c ColorPalette) ToWriter(file io.Writer) error {
 	colorRecord := recfile.Record{}
 	for _, namedColor := range c.AsNamedColors() {
 		colorRecord = append(colorRecord, recfile.Field{Name: namedColor.Name, Value: colorToString(namedColor.Color)})
