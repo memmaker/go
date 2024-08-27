@@ -1,8 +1,7 @@
-package widgets
+package cview
 
 import (
 	"github.com/gdamore/tcell/v2"
-	"github.com/memmaker/go/cview"
 	"github.com/memmaker/go/recfile"
 	"strconv"
 	"strings"
@@ -88,14 +87,14 @@ func (t TypedString) AsRune() rune {
 	return []rune(t)[0]
 }
 
-func EditRecord(app *cview.Application, panels *cview.Panels, rec recfile.Record, onConfirm func(recfile.Record)) {
+func EditRecord(app *Application, panels *Panels, rec recfile.Record, onConfirm func(recfile.Record)) {
 	OpenModalEditor(app, panels, rec.String(), func(lines []string) {
 		modifiedRecord := recfile.RecordFromSlice(lines)
 		onConfirm(modifiedRecord)
 	})
 }
 
-func OpenModalEditor(app *cview.Application, panels *cview.Panels, preFill string, onClose func(lines []string)) {
+func OpenModalEditor(app *Application, panels *Panels, preFill string, onClose func(lines []string)) {
 	closeModal := func() {
 		panels.RemovePanel("modal")
 		_, frontPanel := panels.GetFrontPanel()
@@ -103,7 +102,7 @@ func OpenModalEditor(app *cview.Application, panels *cview.Panels, preFill strin
 		app.SetFocus(frontPanel)
 	}
 
-	modal := cview.NewTextArea()
+	modal := NewTextArea()
 	modal.SetBorder(true)
 	modal.SetWrap(false)
 	modal.SetWordWrap(false)
@@ -128,10 +127,10 @@ func OpenModalEditor(app *cview.Application, panels *cview.Panels, preFill strin
 
 	panels.AddPanel("modal", modal, false, true)
 	app.SetFocus(modal)
-	app.SetBeforeFocusFunc(func(p cview.Primitive) bool { return false })
+	app.SetBeforeFocusFunc(func(p Primitive) bool { return false })
 }
 
-func AskForString(app *cview.Application, panels *cview.Panels, prompt, prefill string, onConfirm func(entered string)) {
+func AskForString(app *Application, panels *Panels, prompt, prefill string, onConfirm func(entered string)) {
 	OpenModalForm(app, panels, []FormElementDescription{
 		{
 			FieldName:    "text",
@@ -146,7 +145,7 @@ func AskForString(app *cview.Application, panels *cview.Panels, prompt, prefill 
 	})
 }
 
-func OpenModalForm(app *cview.Application, panels *cview.Panels, elements []FormElementDescription, confirm func(map[string]TypedString)) {
+func OpenModalForm(app *Application, panels *Panels, elements []FormElementDescription, confirm func(map[string]TypedString)) {
 	modal := NewModalForm(elements, confirm, func() {
 		panels.RemovePanel("modal")
 		_, frontPanel := panels.GetFrontPanel()
@@ -158,7 +157,7 @@ func OpenModalForm(app *cview.Application, panels *cview.Panels, elements []Form
 	app.SetFocus(modal)
 
 	// deny any focus change
-	app.SetBeforeFocusFunc(func(p cview.Primitive) bool {
+	app.SetBeforeFocusFunc(func(p Primitive) bool {
 		if p == modal {
 			return true
 		}
@@ -170,8 +169,8 @@ func OpenModalForm(app *cview.Application, panels *cview.Panels, elements []Form
 	})
 }
 
-func NewModalForm(elements []FormElementDescription, confirm func(map[string]TypedString), close func()) *cview.Modal {
-	modal := cview.NewModal()
+func NewModalForm(elements []FormElementDescription, confirm func(map[string]TypedString), close func()) *Modal {
+	modal := NewModal()
 	form := modal.GetForm()
 
 	for _, element := range elements {
@@ -187,13 +186,13 @@ func NewModalForm(elements []FormElementDescription, confirm func(map[string]Typ
 			if element.PrefillValue != "" {
 				value = element.PrefillValue.AsString()
 			}
-			form.AddInputField(element.Label, value, 30, cview.InputFieldInteger, nil)
+			form.AddInputField(element.Label, value, 30, InputFieldInteger, nil)
 		case FieldTypeFloatInput:
 			value := ""
 			if element.PrefillValue != "" {
 				value = element.PrefillValue.AsString()
 			}
-			form.AddInputField(element.Label, value, 30, cview.InputFieldFloat, nil)
+			form.AddInputField(element.Label, value, 30, InputFieldFloat, nil)
 		case FieldTypeIntegerSlider:
 			curValue := 0
 			if element.PrefillValue != "" {
@@ -226,14 +225,14 @@ func NewModalForm(elements []FormElementDescription, confirm func(map[string]Typ
 			for _, element := range elements {
 				switch element.FieldType {
 				case FieldTypeString, FieldTypeIntegerInput, FieldTypeFloatInput:
-					values[element.FieldName] = TypedString(form.GetFormItemByLabel(element.Label).(*cview.InputField).GetText())
+					values[element.FieldName] = TypedString(form.GetFormItemByLabel(element.Label).(*InputField).GetText())
 				case FieldTypeIntegerSlider:
-					values[element.FieldName] = TypedString(strconv.Itoa(form.GetFormItemByLabel(element.Label).(*cview.Slider).GetProgress()))
+					values[element.FieldName] = TypedString(strconv.Itoa(form.GetFormItemByLabel(element.Label).(*Slider).GetProgress()))
 				case FieldTypeSelect:
-					optionIndex, _ := form.GetFormItemByLabel(element.Label).(*cview.DropDown).GetCurrentOption()
+					optionIndex, _ := form.GetFormItemByLabel(element.Label).(*DropDown).GetCurrentOption()
 					values[element.FieldName] = TypedString(element.Options[optionIndex].Value)
 				case FieldTypeBool:
-					values[element.FieldName] = TypedString(strconv.FormatBool(form.GetFormItemByLabel(element.Label).(*cview.CheckBox).IsChecked()))
+					values[element.FieldName] = TypedString(strconv.FormatBool(form.GetFormItemByLabel(element.Label).(*CheckBox).IsChecked()))
 				}
 			}
 			confirm(values)
@@ -243,10 +242,10 @@ func NewModalForm(elements []FormElementDescription, confirm func(map[string]Typ
 	return modal
 }
 
-func optionsFromStrings(options []SelectOption) []*cview.DropDownOption {
-	result := make([]*cview.DropDownOption, len(options))
+func optionsFromStrings(options []SelectOption) []*DropDownOption {
+	result := make([]*DropDownOption, len(options))
 	for i, option := range options {
-		dropDownOption := cview.NewDropDownOption(option.DisplayText)
+		dropDownOption := NewDropDownOption(option.DisplayText)
 		dropDownOption.SetReference(option.Value)
 		result[i] = dropDownOption
 	}
