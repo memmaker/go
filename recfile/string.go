@@ -1,6 +1,8 @@
 package recfile
 
 import (
+	"fmt"
+	"image/color"
 	"strconv"
 	"strings"
 )
@@ -32,4 +34,16 @@ func StrBool(value string) bool {
 
 func FloatStr(value float64) string {
 	return strconv.FormatFloat(value, 'f', -1, 64)
+}
+
+func RGBStr(value color.RGBA) string {
+	return fmt.Sprintf("%d,%d,%d", value.R, value.G, value.B)
+}
+
+func StrRGB(value string) color.RGBA {
+	parts := strings.Split(value, ",")
+	r, _ := strconv.Atoi(strings.TrimSpace(parts[0]))
+	g, _ := strconv.Atoi(strings.TrimSpace(parts[1]))
+	b, _ := strconv.Atoi(strings.TrimSpace(parts[2]))
+	return color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: 255}
 }
