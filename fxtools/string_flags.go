@@ -1,6 +1,7 @@
 package fxtools
 
 import (
+	"github.com/memmaker/go/recfile"
 	"strconv"
 	"strings"
 )
@@ -62,4 +63,19 @@ func (sf *StringFlags) onChange(key string, val int) {
 	if sf.changeHandler != nil {
 		sf.changeHandler(key, val)
 	}
+}
+func (sf *StringFlags) ToRecord() recfile.Record {
+	record := recfile.Record{}
+	for key, val := range sf.underlying {
+		record = append(record, recfile.Field{Name: key, Value: recfile.IntStr(val)})
+	}
+	return record
+}
+
+func NewStringFlagsFromRecord(record recfile.Record) *StringFlags {
+	sf := NewStringFlags()
+	for _, field := range record {
+		sf.Set(field.Name, recfile.StrInt(field.Value))
+	}
+	return sf
 }
