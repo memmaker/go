@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func IntStr(value int) string {
@@ -38,6 +39,15 @@ func FloatStr(value float64) string {
 
 func RGBStr(value color.RGBA) string {
 	return fmt.Sprintf("%d,%d,%d", value.R, value.G, value.B)
+}
+
+func TimeStr(value time.Time) string {
+	return value.Format(time.RFC3339)
+}
+
+func StrTime(value string) time.Time {
+	parse, _ := time.Parse(time.RFC3339, value)
+	return parse
 }
 
 func StrRGB(value string) color.RGBA {
