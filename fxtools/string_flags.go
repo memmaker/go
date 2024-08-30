@@ -71,20 +71,35 @@ func (sf *StringFlags) onChange(key string, val int) {
 		sf.changeHandler(key, val)
 	}
 }
-func (sf *StringFlags) ToRecord() recfile.Record {
-	record := recfile.Record{}
+func (sf *StringFlags) ToRecord() []recfile.Record {
+	result := make([]recfile.Record, 0, len(sf.underlying))
 	for key, val := range sf.underlying {
 		if key != "" && val != 0 {
-			record = append(record, recfile.Field{Name: key, Value: recfile.IntStr(val)})
+			result = append(result, recfile.Record{
+				recfile.Field{Name: "Key", Value: key},
+				recfile.Field{Name: "Value", Value: recfile.IntStr(val)},
+			})
 		}
 	}
-	return record
+	return result
 }
 
-func NewStringFlagsFromRecord(record recfile.Record) *StringFlags {
+func NewStringFlagsFromRecord(records []recfile.Record) *StringFlags {
 	sf := NewStringFlags()
-	for _, field := range record {
-		sf.Set(field.Name, recfile.StrInt(field.Value))
+	for _, record := range records {
+		var key string
+		var val int
+		for _, field := range record {
+			if field.Name == "Key" {
+				key = field.Value
+			} else if field.Name == "Value" {
+				val = recfile.StrInt(field.Value)
+			}
+		}
+		if key != "" && val != 0 {
+			sf.Set(key, val)
+		}
 	}
+
 	return sf
 }
