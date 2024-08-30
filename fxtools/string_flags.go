@@ -24,6 +24,10 @@ func (sf *StringFlags) SetChangeHandler(handler func(string, int)) {
 	sf.changeHandler = handler
 }
 func (sf *StringFlags) Set(key string, val int) {
+	if val == 0 {
+		sf.ClearFlag(key)
+		return
+	}
 	sf.underlying[key] = val
 	sf.onChange(key, val)
 }
@@ -52,6 +56,9 @@ func (sf *StringFlags) ToStringArray() []string {
 			rows = append(rows, TableRow{Columns: []string{key, strconv.Itoa(val)}})
 		}
 	}
+	if len(rows) == 0 {
+		return []string{}
+	}
 	return TableLayout(rows, []TextAlignment{AlignLeft, AlignRight})
 }
 
@@ -67,7 +74,9 @@ func (sf *StringFlags) onChange(key string, val int) {
 func (sf *StringFlags) ToRecord() recfile.Record {
 	record := recfile.Record{}
 	for key, val := range sf.underlying {
-		record = append(record, recfile.Field{Name: key, Value: recfile.IntStr(val)})
+		if key != "" && val != 0 {
+			record = append(record, recfile.Field{Name: key, Value: recfile.IntStr(val)})
+		}
 	}
 	return record
 }
