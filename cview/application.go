@@ -882,6 +882,13 @@ func (a *Application) SetBeforeFocusFunc(handler func(p Primitive) bool) {
 	a.beforeFocus = handler
 }
 
+func (a *Application) GetBeforeFocusFunc() func(p Primitive) bool {
+	a.RLock()
+	defer a.RUnlock()
+
+	return a.beforeFocus
+}
+
 // SetAfterFocusFunc installs a callback function which is invoked after the
 // application's focus changes.
 //
