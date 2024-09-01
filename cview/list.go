@@ -204,6 +204,8 @@ type List struct {
 	prefixWidth, suffixWidth int
 
 	sync.RWMutex
+
+	highlightDisabled bool
 }
 
 // NewList returns a new form.
@@ -224,6 +226,13 @@ func NewList() *List {
 	l.focus = l
 
 	return l
+}
+
+func (l *List) SetHighlightDisabled(highlight bool) {
+	l.Lock()
+	defer l.Unlock()
+
+	l.highlightDisabled = highlight
 }
 
 // SetCurrentItem sets the currently selected item by its index, starting at 0
@@ -1002,7 +1011,7 @@ func (l *List) Draw(screen tcell.Screen) {
 		Print(screen, mainText, x, y, width, AlignLeft, l.mainTextColor)
 
 		// Background color of selected text.
-		if index == l.currentItem && (!l.selectedFocusOnly || hasFocus) {
+		if index == l.currentItem && (!l.selectedFocusOnly || hasFocus) && !l.highlightDisabled {
 			textWidth := width
 			if !l.highlightFullLine {
 				if w := TaggedTextWidth(mainText); w < textWidth {
