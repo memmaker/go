@@ -130,8 +130,8 @@ func OpenModalEditor(app *Application, panels *Panels, preFill string, onClose f
 	app.SetBeforeFocusFunc(func(p Primitive) bool { return false })
 }
 
-func AskForString(app *Application, panels *Panels, prompt, prefill string, onConfirm func(entered string)) {
-	OpenModalForm(app, panels, []FormElementDescription{
+func AskForString(app *Application, panels *Panels, prompt, prefill string, onConfirm func(entered string)) *Modal {
+	return OpenModalForm(app, panels, []FormElementDescription{
 		{
 			FieldName:    "text",
 			PrefillValue: TypedString(prefill),
@@ -145,7 +145,7 @@ func AskForString(app *Application, panels *Panels, prompt, prefill string, onCo
 	})
 }
 
-func OpenModalForm(app *Application, panels *Panels, elements []FormElementDescription, confirm func(map[string]TypedString)) {
+func OpenModalForm(app *Application, panels *Panels, elements []FormElementDescription, confirm func(map[string]TypedString)) *Modal {
 	modal := NewModalForm(elements, confirm, func() {
 		panels.RemovePanel("modal")
 		_, frontPanel := panels.GetFrontPanel()
@@ -154,7 +154,7 @@ func OpenModalForm(app *Application, panels *Panels, elements []FormElementDescr
 		app.SetFocus(frontPanel)
 	})
 	panels.AddPanel("modal", modal, false, true)
-	app.SetFocus(modal)
+	app.SetFocus(modal.GetForm().GetFormItem(0))
 
 	// deny any focus change
 	app.SetBeforeFocusFunc(func(p Primitive) bool {
@@ -167,6 +167,7 @@ func OpenModalForm(app *Application, panels *Panels, elements []FormElementDescr
 		}
 		return false
 	})
+	return modal
 }
 
 func NewModalForm(elements []FormElementDescription, confirm func(map[string]TypedString), close func()) *Modal {
