@@ -137,6 +137,9 @@ func TableLayout(tableData []TableRow, alignments []TextAlignment) []string {
             } else {
                 paddedCol = RightPad(col, colWidths[i])
             }
+            if i == len(row.Columns)-1 && alignments[i] == alignments[i-1] {
+                paddedCol += " "
+            }
             rowText += paddedCol
         }
         result = append(result, rowText)
