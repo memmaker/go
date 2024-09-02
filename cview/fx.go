@@ -12,7 +12,7 @@ type StyledRune struct {
 	Style tcell.Style
 }
 
-func FadeFromBlack(app *Application, animDelay time.Duration) {
+func FadeFromBlack(app *Application, animDelay time.Duration, stepSize int32) {
 	screen := app.GetScreen()
 
 	app.Lock()
@@ -38,7 +38,7 @@ func FadeFromBlack(app *Application, animDelay time.Duration) {
 
 outerLoop:
 	for i := 0; i < 100; i++ {
-		if !restoreScreen(screen, screenCopy, w, h) {
+		if !restoreScreen(screen, screenCopy, w, h, stepSize) {
 			break outerLoop
 		}
 		screen.Show()
@@ -61,8 +61,7 @@ outerLoop:
 
 }
 
-func restoreScreen(screen tcell.Screen, screenCopy []StyledRune, w int, h int) bool {
-	lightenAmount := int32(10)
+func restoreScreen(screen tcell.Screen, screenCopy []StyledRune, w int, h int, lightenAmount int32) bool {
 	centerPos := geometry.Point{X: w / 2, Y: h / 2}
 	maxDist := geometry.Distance(centerPos, geometry.Point{X: 0, Y: 0})
 	workLeft := false
@@ -120,7 +119,7 @@ func restoreScreenLocation(screen tcell.Screen, screenCopy []StyledRune, x int, 
 	return hadWorkLeft
 }
 
-func FadeToBlack(app *Application, animDelay time.Duration) {
+func screenAnim(app *Application, animDelay time.Duration, stepSize int32, animator func(screen tcell.Screen, stepSize int32) (workLeft bool)) {
 	screen := app.GetScreen()
 
 	app.Lock()
@@ -129,7 +128,7 @@ func FadeToBlack(app *Application, animDelay time.Duration) {
 	var breakingKey *tcell.EventKey
 outerLoop:
 	for i := 0; i < 100; i++ {
-		if !darkenScreen(screen) {
+		if !animator(screen, stepSize) {
 			break outerLoop
 		}
 		screen.Show()
@@ -151,8 +150,15 @@ outerLoop:
 	}
 }
 
-func darkenScreen(screen tcell.Screen) bool {
-	darkenAmount := int32(10)
+func FadeToBlackCircular(app *Application, animDelay time.Duration, stepSize int32) {
+	screenAnim(app, animDelay, stepSize, darkenScreenCircular)
+}
+
+func FadeToBlack(app *Application, animDelay time.Duration, stepSize int32) {
+	screenAnim(app, animDelay, stepSize, darkenScreen)
+}
+
+func darkenScreenCircular(screen tcell.Screen, darkenAmount int32) bool {
 	w, h := screen.Size()
 	centerPos := geometry.Point{X: w / 2, Y: h / 2}
 	maxDist := geometry.Distance(centerPos, geometry.Point{X: 0, Y: 0})
@@ -162,6 +168,20 @@ func darkenScreen(screen tcell.Screen) bool {
 			dist := geometry.Distance(centerPos, geometry.Point{X: x, Y: y})
 			percent := fxtools.Clamp(0.2, 1.0, (float64(dist)/float64(maxDist))+0.5)
 			workDone := darkenScreenLocation(screen, x, y, int32(float64(darkenAmount)*percent))
+			if workDone {
+				workLeft = true
+			}
+		}
+	}
+	return workLeft
+}
+
+func darkenScreen(screen tcell.Screen, darkenAmount int32) bool {
+	w, h := screen.Size()
+	workLeft := false
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			workDone := darkenScreenLocation(screen, x, y, int32(darkenAmount))
 			if workDone {
 				workLeft = true
 			}
@@ -182,7 +202,7 @@ func darkenScreenLocation(screen tcell.Screen, x int, y int, darkenAmount int32)
 	return hadWorkLeft
 }
 
-func FadeToWhite(app *Application, animDelay time.Duration) {
+func FadeToWhite(app *Application, stepSize int, animDelay time.Duration) {
 	screen := app.GetScreen()
 
 	app.Lock()
@@ -191,7 +211,7 @@ func FadeToWhite(app *Application, animDelay time.Duration) {
 	var breakingKey *tcell.EventKey
 outerLoop:
 	for i := 0; i < 100; i++ {
-		if !lightenScreen(screen) {
+		if !lightenScreen(screen, stepSize) {
 			break outerLoop
 		}
 		screen.Show()
@@ -213,17 +233,12 @@ outerLoop:
 	}
 }
 
-func lightenScreen(screen tcell.Screen) bool {
-	lightenAmount := int32(10)
+func lightenScreen(screen tcell.Screen, size int) bool {
 	w, h := screen.Size()
-	centerPos := geometry.Point{X: w / 2, Y: h / 2}
-	maxDist := geometry.Distance(centerPos, geometry.Point{X: 0, Y: 0})
 	workLeft := false
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
-			dist := geometry.Distance(centerPos, geometry.Point{X: x, Y: y})
-			percent := fxtools.Clamp(0.2, 1.0, (float64(dist)/float64(maxDist))+0.5)
-			workDone := lightenScreenLocation(screen, x, y, int32(float64(lightenAmount)*percent))
+			workDone := lightenScreenLocation(screen, x, y, int32(size))
 			if workDone {
 				workLeft = true
 			}
