@@ -23,6 +23,12 @@ func (sf *StringFlags) Get(key string) int {
 func (sf *StringFlags) SetChangeHandler(handler func(string, int)) {
 	sf.changeHandler = handler
 }
+func (sf *StringFlags) Increment(key string) {
+	sf.Set(key, sf.Get(key)+1)
+}
+func (sf *StringFlags) Decrement(key string) {
+	sf.Set(key, sf.Get(key)-1)
+}
 func (sf *StringFlags) Set(key string, val int) {
 	if val == 0 {
 		sf.ClearFlag(key)
