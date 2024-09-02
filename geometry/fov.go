@@ -84,6 +84,17 @@ func (fov *FOV) SetRange(rg Rect) {
 	nfov := NewFOV(rg)
 	*fov = *nfov
 }
+func (fov *FOV) RemoveFromVisibles(toRemove func(p Point) bool) {
+	visibles := fov.Visibles[:0]
+	for _, p := range fov.Visibles {
+		if toRemove(p) {
+			fov.ShadowCasting[fov.idx(p)] = false
+		} else {
+			visibles = append(visibles, p)
+		}
+	}
+	fov.Visibles = visibles
+}
 
 // Range returns the current FOV's range of positions.
 func (fov *FOV) Range() Rect {
