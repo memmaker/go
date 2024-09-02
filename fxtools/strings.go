@@ -80,6 +80,17 @@ type TableRow struct {
     Columns []string
 }
 
+func NewTableRow(columns ...string) TableRow {
+    return TableRow{Columns: columns}
+}
+
+func NewTableRows(columns [][]string) []TableRow {
+    var result []TableRow
+    for _, cols := range columns {
+        result = append(result, NewTableRow(cols...))
+    }
+    return result
+}
 func TableLine(labelWidth, colWidth int, label string, columns ...string) string {
     colWidths := make([]int, len(columns))
     for i, _ := range columns {
@@ -87,13 +98,29 @@ func TableLine(labelWidth, colWidth int, label string, columns ...string) string
     }
     return fmt.Sprintf("%s%s", RightPad(label, labelWidth+1), rightAlignColumns(columns, colWidths))
 }
+
+func TableLayoutLastRight(tableData []TableRow) []string {
+    alignments := make([]TextAlignment, len(tableData[0].Columns))
+    for i := 0; i < len(tableData[0].Columns); i++ {
+        if i == len(tableData[0].Columns)-1 {
+            alignments[i] = AlignRight
+        } else {
+            alignments[i] = AlignLeft
+        }
+    }
+    return TableLayout(tableData, alignments)
+}
 func TableLayout(tableData []TableRow, alignments []TextAlignment) []string {
     colWidths := make([]int, len(tableData[0].Columns))
 
     for _, row := range tableData {
         for i, col := range row.Columns {
-            if len(col)+1 > colWidths[i] {
-                colWidths[i] = len(col) + 1
+            colWidth := len(col)
+            if i != len(row.Columns)-1 {
+                colWidth += 1
+            }
+            if colWidth > colWidths[i] {
+                colWidths[i] = colWidth
             }
         }
     }
