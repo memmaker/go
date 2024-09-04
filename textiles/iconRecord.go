@@ -92,6 +92,16 @@ func (c IconRecord) ToRecord() recfile.Record {
 	return record
 }
 
+func (c IconRecord) Copy() IconRecord {
+	newMeta := make(recfile.Record, len(c.Meta))
+	copy(newMeta, c.Meta)
+	return IconRecord{
+		Name: c.Name,
+		Icon: c.Icon,
+		Meta: newMeta,
+	}
+}
+
 func NewIconRecord(record recfile.Record) IconRecord {
 	category := IconRecord{}
 	for _, field := range record {
