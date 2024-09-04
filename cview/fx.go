@@ -202,9 +202,10 @@ func darkenScreenLocation(screen tcell.Screen, x int, y int, darkenAmount int32)
 	return hadWorkLeft
 }
 
-func FadeToWhite(app *Application, animDelay time.Duration, stepSize int, forwardBreakingKey bool) {
+func FadeToWhite(app *Application, animDelay time.Duration, stepSize int, forwardBreakingKey bool) (cancel func()) {
 	screen := app.GetScreen()
 
+	cancelled := false
 	app.Lock()
 	defer app.Unlock()
 
@@ -217,6 +218,9 @@ outerLoop:
 		screen.Show()
 		var waited time.Duration
 		for waited < animDelay {
+			if cancelled {
+				return
+			}
 			if screen.HasPendingEvent() {
 				ev := screen.PollEvent()
 				if keyEvent, ok := ev.(*tcell.EventKey); ok {
@@ -230,6 +234,10 @@ outerLoop:
 	}
 	if breakingKey != nil && forwardBreakingKey {
 		app.QueueEvent(breakingKey)
+	}
+
+	return func() {
+		cancelled = true
 	}
 }
 
