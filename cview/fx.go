@@ -12,7 +12,7 @@ type StyledRune struct {
 	Style tcell.Style
 }
 
-func FadeFromBlack(app *Application, animDelay time.Duration, stepSize int32) {
+func FadeFromBlack(app *Application, animDelay time.Duration, stepSize int32, forwardBreakingKey bool) {
 	screen := app.GetScreen()
 
 	app.Lock()
@@ -55,7 +55,7 @@ outerLoop:
 			waited += 10 * time.Millisecond
 		}
 	}
-	if breakingKey != nil {
+	if breakingKey != nil && forwardBreakingKey {
 		app.QueueEvent(breakingKey)
 	}
 
@@ -119,7 +119,7 @@ func restoreScreenLocation(screen tcell.Screen, screenCopy []StyledRune, x int, 
 	return hadWorkLeft
 }
 
-func screenAnim(app *Application, animDelay time.Duration, stepSize int32, animator func(screen tcell.Screen, stepSize int32) (workLeft bool)) {
+func screenAnim(app *Application, animDelay time.Duration, stepSize int32, forwardBreakingKey bool, animator func(screen tcell.Screen, stepSize int32) (workLeft bool)) {
 	screen := app.GetScreen()
 
 	app.Lock()
@@ -145,17 +145,17 @@ outerLoop:
 			waited += 10 * time.Millisecond
 		}
 	}
-	if breakingKey != nil {
+	if breakingKey != nil && forwardBreakingKey {
 		app.QueueEvent(breakingKey)
 	}
 }
 
-func FadeToBlackCircular(app *Application, animDelay time.Duration, stepSize int32) {
-	screenAnim(app, animDelay, stepSize, darkenScreenCircular)
+func FadeToBlackCircular(app *Application, animDelay time.Duration, stepSize int32, forwardBreakingKey bool) {
+	screenAnim(app, animDelay, stepSize, forwardBreakingKey, darkenScreenCircular)
 }
 
-func FadeToBlack(app *Application, animDelay time.Duration, stepSize int32) {
-	screenAnim(app, animDelay, stepSize, darkenScreen)
+func FadeToBlack(app *Application, animDelay time.Duration, stepSize int32, forwardBreakingKey bool) {
+	screenAnim(app, animDelay, stepSize, forwardBreakingKey, darkenScreen)
 }
 
 func darkenScreenCircular(screen tcell.Screen, darkenAmount int32) bool {
@@ -202,7 +202,7 @@ func darkenScreenLocation(screen tcell.Screen, x int, y int, darkenAmount int32)
 	return hadWorkLeft
 }
 
-func FadeToWhite(app *Application, animDelay time.Duration, stepSize int) {
+func FadeToWhite(app *Application, animDelay time.Duration, stepSize int, forwardBreakingKey bool) {
 	screen := app.GetScreen()
 
 	app.Lock()
@@ -228,7 +228,7 @@ outerLoop:
 			waited += 10 * time.Millisecond
 		}
 	}
-	if breakingKey != nil {
+	if breakingKey != nil && forwardBreakingKey {
 		app.QueueEvent(breakingKey)
 	}
 }
