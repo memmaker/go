@@ -2,7 +2,6 @@ package fxtools
 
 import (
 	"math/rand"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -51,18 +50,15 @@ func ParseInterval(s string) Interval {
 		s = strings.TrimSpace(strings.ReplaceAll(s, " ", ""))
 		return NewInterval(ParseInt(s), ParseInt(s))
 	}
-	pattern := `(\d+)(?:\s*-\s*(\d+))?`
-	reg := regexp.MustCompile(pattern)
-	matches := reg.FindStringSubmatch(s)
-	var minVal, maxVal int
-	if len(matches) == 3 {
-		minVal = ParseInt(matches[1])
-		maxVal = ParseInt(matches[2])
-	} else {
-		minVal = ParseInt(matches[1])
-		maxVal = minVal
+	parts := strings.Split(s, "-")
+	left := strings.TrimSpace(parts[0])
+	right := strings.TrimSpace(parts[1])
+	if left == "" {
+		// a negative number
+		realVal := ParseInt(right) * -1
+		return NewInterval(realVal, realVal)
 	}
-	return NewInterval(minVal, maxVal)
+	return NewInterval(ParseInt(left), ParseInt(right))
 }
 
 func ParseInt(s string) int {
