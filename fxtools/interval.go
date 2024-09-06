@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type Interval struct {
@@ -46,6 +47,10 @@ func NewInterval(min, max int) Interval {
 
 func ParseInterval(s string) Interval {
 	// looks like "1-6" or possibly "1", "2 - 6"
+	if !strings.Contains(s, "-") {
+		s = strings.TrimSpace(strings.ReplaceAll(s, " ", ""))
+		return NewInterval(ParseInt(s), ParseInt(s))
+	}
 	pattern := `(\d+)(?:\s*-\s*(\d+))?`
 	reg := regexp.MustCompile(pattern)
 	matches := reg.FindStringSubmatch(s)
