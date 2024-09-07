@@ -2,7 +2,6 @@ package cview
 
 import (
 	"github.com/gdamore/tcell/v2"
-	"github.com/memmaker/go/fxtools"
 	"github.com/memmaker/go/geometry"
 	"time"
 )
@@ -68,7 +67,7 @@ func restoreScreen(screen tcell.Screen, screenCopy []StyledRune, w int, h int, l
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
 			dist := geometry.Distance(centerPos, geometry.Point{X: x, Y: y})
-			percent := fxtools.Clamp(0.2, 1.0, (float64(dist)/float64(maxDist))+0.5)
+			percent := Clamp(0.2, 1.0, (float64(dist)/float64(maxDist))+0.5)
 			locationNeedsMoreWork := restoreScreenLocation(screen, screenCopy, x, y, int32(float64(lightenAmount)*percent), w, h)
 			if locationNeedsMoreWork {
 				workLeft = true
@@ -166,7 +165,7 @@ func darkenScreenCircular(screen tcell.Screen, darkenAmount int32) bool {
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
 			dist := geometry.Distance(centerPos, geometry.Point{X: x, Y: y})
-			percent := fxtools.Clamp(0.2, 1.0, (float64(dist)/float64(maxDist))+0.5)
+			percent := Clamp(0.2, 1.0, (float64(dist)/float64(maxDist))+0.5)
 			workDone := darkenScreenLocation(screen, x, y, int32(float64(darkenAmount)*percent))
 			if workDone {
 				workLeft = true
@@ -265,4 +264,14 @@ func lightenScreenLocation(screen tcell.Screen, x int, y int, amount int32) bool
 	newBG := tcell.NewRGBColor(min(255, bR+amount), min(255, bG+amount), min(255, bB+amount))
 	screen.SetContent(x, y, icon, nil, style.Background(newBG).Foreground(newFG))
 	return hadWorkLeft
+}
+
+func Clamp(min, max, value float64) float64 {
+	if value < min {
+		return min
+	}
+	if value > max {
+		return max
+	}
+	return value
 }
