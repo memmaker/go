@@ -22,6 +22,9 @@ func (i Interval) IsZero() bool {
 func (i Interval) ExpectedValue() int {
 	return (i.Min + i.Max) / 2
 }
+func (i Interval) Scaled(scale float64) Interval {
+	return NewInterval(int(float64(i.Min)*scale), int(float64(i.Max)*scale))
+}
 
 func (i Interval) ShortString() string {
 	if i.Min == i.Max {
