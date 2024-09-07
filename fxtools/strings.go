@@ -2,6 +2,7 @@ package fxtools
 
 import (
 	"fmt"
+	"github.com/memmaker/go/cview"
 	"github.com/memmaker/go/geometry"
 	"strings"
 )
@@ -39,11 +40,11 @@ func StringSum(text string) int64 {
 	return intSum
 }
 func RightPad(s string, pLen int) string {
-	return s + strings.Repeat(" ", pLen-len(s))
+	return s + strings.Repeat(" ", pLen-cview.TaggedStringWidth(s))
 }
 
 func LeftPad(s string, pLen int) string {
-	return strings.Repeat(" ", pLen-len(s)) + s
+	return strings.Repeat(" ", pLen-cview.TaggedStringWidth(s)) + s
 }
 func RightPadCount(s string, count int) string {
 	return s + strings.Repeat(" ", count)
@@ -115,7 +116,7 @@ func TableLayout(tableData []TableRow, alignments []TextAlignment) []string {
 
 	for _, row := range tableData {
 		for i, col := range row.Columns {
-			colWidth := len(col)
+			colWidth := cview.TaggedStringWidth(col)
 			if i != len(row.Columns)-1 {
 				colWidth += 1
 			}
