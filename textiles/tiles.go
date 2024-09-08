@@ -14,6 +14,7 @@ type TextTile struct {
 	Icon          TextIcon
 	IsWalkable    bool
 	IsTransparent bool
+	Flags         uint8
 }
 
 func (t TextTile) WithIcon(icon TextIcon) TextTile {
@@ -47,6 +48,8 @@ func recordToTile(record recfile.Record, palette ColorPalette) TextTile {
 			tile.IsWalkable = field.AsBool()
 		case "istransparent":
 			tile.IsTransparent = field.AsBool()
+		case "flags":
+			tile.Flags = field.AsUint8()
 		}
 	}
 	return tile.WithIcon(icon)

@@ -83,6 +83,11 @@ func (f Field) AsRGB(sep string) color.RGBA {
 	}
 }
 
+func (f Field) AsUint8() uint8 {
+	val, _ := strconv.Atoi(f.Value)
+	return uint8(val)
+}
+
 func fieldMap(i []string) []Field {
 	result := make([]Field, len(i))
 	for j, value := range i {

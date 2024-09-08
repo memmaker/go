@@ -19,6 +19,23 @@ func StrInt(value string) int {
 	atoi, _ := strconv.Atoi(value)
 	return atoi
 }
+func UInt64Str(value uint64) string {
+	return strconv.FormatUint(value, 10)
+}
+
+func StrUInt64(value string) uint64 {
+	parseUint, _ := strconv.ParseUint(value, 10, 64)
+	return parseUint
+}
+func UInt8Str(value uint8) string {
+	return strconv.FormatUint(uint64(value), 10)
+}
+
+func StrUInt8(value string) uint8 {
+	parseUint, _ := strconv.ParseUint(value, 10, 8)
+	return uint8(parseUint)
+}
+
 func Int32Str(value int32) string {
 	return strconv.FormatInt(int64(value), 10)
 }
