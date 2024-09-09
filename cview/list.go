@@ -205,7 +205,8 @@ type List struct {
 
 	sync.RWMutex
 
-	highlightDisabled bool
+	highlightDisabled      bool
+	forceSelectedTextColor bool
 }
 
 // NewList returns a new form.
@@ -233,6 +234,13 @@ func (l *List) SetHighlightDisabled(highlight bool) {
 	defer l.Unlock()
 
 	l.highlightDisabled = highlight
+}
+
+func (l *List) SetForceSelectedTextColor(force bool) {
+	l.Lock()
+	defer l.Unlock()
+
+	l.forceSelectedTextColor = force
 }
 
 // SetCurrentItem sets the currently selected item by its index, starting at 0
@@ -1022,7 +1030,7 @@ func (l *List) Draw(screen tcell.Screen) {
 			for bx := 0; bx < textWidth; bx++ {
 				m, c, style, _ := screen.GetContent(x+bx, y)
 				fg, _, _ := style.Decompose()
-				if fg == l.mainTextColor {
+				if fg == l.mainTextColor || l.forceSelectedTextColor {
 					fg = l.selectedTextColor
 				}
 				style = SetAttributes(style.Background(l.selectedBackgroundColor).Foreground(fg), l.selectedTextAttributes)
