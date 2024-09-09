@@ -122,6 +122,13 @@ func (b *Button) SetBlurFunc(handler func(key tcell.Key)) {
 	b.blur = handler
 }
 
+func (b *Button) GetBlurFunc() func(key tcell.Key) {
+	b.RLock()
+	defer b.RUnlock()
+
+	return b.blur
+}
+
 // Draw draws this primitive onto the screen.
 func (b *Button) Draw(screen tcell.Screen) {
 	if !b.GetVisible() {
