@@ -1,7 +1,9 @@
 package fxtools
 
 import (
+	"cmp"
 	"github.com/memmaker/go/recfile"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -69,7 +71,11 @@ func (sf *StringFlags) ToStringArray() []string {
 }
 
 func (sf *StringFlags) String() string {
-	return strings.Join(sf.ToStringArray(), "\n")
+	array := sf.ToStringArray()
+	slices.SortStableFunc(array, func(i, j string) int {
+		return cmp.Compare(i, j)
+	})
+	return strings.Join(array, "\n")
 }
 
 func (sf *StringFlags) onChange(key string, val int) {
