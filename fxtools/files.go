@@ -29,6 +29,19 @@ func MustCreate(filename string) *os.File {
 	return MustLoad(os.Create(filename))
 }
 
+func DirHasSubDirs(dir string) bool {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return false
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			return true
+		}
+	}
+	return false
+}
+
 func FileExists(filename string) bool {
 	_, err := os.Stat(filename)
 	return !os.IsNotExist(err)
