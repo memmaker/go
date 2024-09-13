@@ -155,6 +155,8 @@ func OpenModalForm(app *Application, panels *Panels, elements []FormElementDescr
 	})
 	panels.AddPanel("modal", modal, false, true)
 	app.SetBeforeFocusFunc(nil)
+
+	modal.GetForm().SetFocus(0)
 	app.SetFocus(modal.GetForm().GetFormItem(0))
 
 	// deny any focus change
