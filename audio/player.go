@@ -31,12 +31,20 @@ func (p *Player) Disable() {
 }
 
 func (p *Player) StopAll() {
+    p.stopAndCloseStream()
     speaker.Clear()
 }
-func (p *Player) Stream(filename string) error {
+func (p *Player) StreamOnce(filename string) error {
+    return p.stream(filename, false)
+}
+func (p *Player) StreamLoop(filename string) error {
+    return p.stream(filename, true)
+}
+func (p *Player) stream(filename string, shouldLoop bool) error {
     if p.disabled {
         return nil
     }
+    p.stopAndCloseStream()
     f, err := os.Open(filename)
     if err != nil {
         return err
@@ -46,16 +54,24 @@ func (p *Player) Stream(filename string) error {
         return err
     }
     speaker.Play(beep.Seq(streamer, beep.Callback(func() {
-        streamer.Close()
+        if shouldLoop {
+            streamer.Seek(0)
+        } else {
+            streamer.Close()
+        }
     })))
     p.currentStream = streamer
     return nil
 }
 func (p *Player) UnloadAllCues() {
+    p.stopAndCloseStream()
+    p.loadedCues = make(map[string][]*beep.Buffer)
+}
+
+func (p *Player) stopAndCloseStream() {
     if p.currentStream != nil {
         p.currentStream.Close()
     }
-    p.loadedCues = make(map[string][]*beep.Buffer)
 }
 func (p *Player) LoadCuesFromDir(dirName string, cuePrefix string) {
     if p.disabled {
