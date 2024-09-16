@@ -46,16 +46,16 @@ func (a Arguments) IsEmpty() bool {
     return len(a) == 0
 }
 
+var funcPattern = regexp.MustCompile(`([0-9A-Za-z_]+)\((.*)\)`)
+
 func LooksLikeAFunction(line string) bool {
-    regexpPattern := regexp.MustCompile(`([A-Za-z_]+)\((.*)\)`)
-    return regexpPattern.MatchString(line)
+    return funcPattern.MatchString(line)
 }
 func NewArgumentsFromString(args string) Arguments {
     return trimAll(strings.Split(args, "|"))
 }
 func GetNameAndArgs(line string) (string, Arguments) {
-    regexpPattern := regexp.MustCompile(`([A-Za-z_]+)\((.*)\)`)
-    matches := regexpPattern.FindStringSubmatch(line)
+    matches := funcPattern.FindStringSubmatch(line)
     if matches == nil {
         return line, Arguments{}
     }
