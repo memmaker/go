@@ -95,6 +95,9 @@ func TableLine(labelWidth, colWidth int, label string, columns ...string) string
 }
 
 func TableLayoutLastRight(tableData []TableRow) []string {
+	if len(tableData) == 0 {
+		return []string{}
+	}
 	alignments := make([]TextAlignment, len(tableData[0].Columns))
 	for i := 0; i < len(tableData[0].Columns); i++ {
 		if i == len(tableData[0].Columns)-1 {
@@ -106,6 +109,9 @@ func TableLayoutLastRight(tableData []TableRow) []string {
 	return TableLayout(tableData, alignments)
 }
 func TableLayout(tableData []TableRow, alignments []TextAlignment) []string {
+	if len(tableData) == 0 {
+		return []string{}
+	}
 	colWidths := make([]int, len(tableData[0].Columns))
 
 	for _, row := range tableData {
