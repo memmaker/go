@@ -44,7 +44,7 @@ func DirHasSubDirs(dir string) bool {
 
 func FileExists(filename string) bool {
 	_, err := os.Stat(filename)
-	return !os.IsNotExist(err)
+	return !os.IsNotExist(err) && err == nil
 }
 
 func DirExists(dir string) bool {
