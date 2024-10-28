@@ -364,9 +364,16 @@ func (r *RecReader) ReadLines(data []string) map[string][]Record {
 func defaultOnly(records map[string][]Record) []Record {
 	return records["default"]
 }
+
 func Read(file io.Reader) []Record {
 	return defaultOnly(ReadMulti(file))
 }
+
+func ReadAndClose(file io.ReadCloser) []Record {
+	defer file.Close()
+	return Read(file)
+}
+
 func ReadMulti(input io.Reader) map[string][]Record {
 	scanner := bufio.NewScanner(input)
 	reader := NewReader()
@@ -374,6 +381,11 @@ func ReadMulti(input io.Reader) map[string][]Record {
 		reader.ReadLine(scanner.Text())
 	}
 	return reader.End()
+}
+
+func ReadMultiAndClose(file io.ReadCloser) map[string][]Record {
+	defer file.Close()
+	return ReadMulti(file)
 }
 
 func RecordFromSlice(data []string) Record {
@@ -387,6 +399,12 @@ func RecordFromSlice(data []string) Record {
 func Write(file io.Writer, records []Record) error {
 	return WriteMulti(file, map[string][]Record{"default": records})
 }
+
+func WriteAndClose(file io.WriteCloser, records []Record) error {
+	defer file.Close()
+	return Write(file, records)
+}
+
 func WriteCSV(output io.Writer, fieldNames []string, records []Record) {
 	csvWriter := csv.NewWriter(output)
 	csvWriter.Write(fieldNames)
@@ -396,6 +414,7 @@ func WriteCSV(output io.Writer, fieldNames []string, records []Record) {
 	}
 	csvWriter.Flush()
 }
+
 func WriteMulti(file io.Writer, recordsInCategories map[string][]Record) error {
 	writeString := func(s string) error {
 		_, err := file.Write([]byte(s))
@@ -427,4 +446,9 @@ func WriteMulti(file io.Writer, recordsInCategories map[string][]Record) error {
 		}
 	}
 	return nil
+}
+
+func WriteMultiAndClose(file io.WriteCloser, recordsInCategories map[string][]Record) error {
+	defer file.Close()
+	return WriteMulti(file, recordsInCategories)
 }

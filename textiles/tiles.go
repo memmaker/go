@@ -31,6 +31,11 @@ func ReadTilesFile(reader io.Reader, palette ColorPalette) []TextTile {
 	return tiles
 }
 
+func ReadTilesFileAndClose(reader io.ReadCloser, palette ColorPalette) []TextTile {
+	defer reader.Close()
+	return ReadTilesFile(reader, palette)
+}
+
 func recordToTile(record recfile.Record, palette ColorPalette) TextTile {
 	tile := TextTile{}
 	var icon TextIcon
