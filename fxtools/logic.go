@@ -17,7 +17,7 @@ func (a Arguments) Get(index int) string {
 	if index >= len(a) || index < 0 {
 		return ""
 	}
-	return strings.Trim(a[index], "'\" ")
+	return a[index]
 }
 
 func (a Arguments) GetInt(index int) int {
