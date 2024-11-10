@@ -64,8 +64,44 @@ func GetNameAndArgs(line string) (string, Arguments) {
 	if argString == "" {
 		return name, Arguments{}
 	}
-	args := trimAll(strings.Split(argString, ","))
+	args := trimAll(splitArgs(argString, ','))
 	return name, args
+}
+
+func splitArgs(argString string, delimiter rune) []string {
+	prevDelimiter := 0
+	var foundArgs []string
+
+	var insideString bool
+	var prevChar rune
+	var stringOpener rune
+	for i, r := range argString {
+		if prevChar != '\\' && ((!insideString && (r == '"' || r == '\'')) || (insideString && r == stringOpener)) {
+			insideString = !insideString
+			if insideString {
+				stringOpener = r
+			}
+		}
+		if r == delimiter && !insideString {
+			foundArgs = append(foundArgs, cleanArg(argString[prevDelimiter:i], stringOpener))
+			prevDelimiter = i + 1
+		}
+		prevChar = r
+	}
+	if prevDelimiter < len(argString) {
+		foundArgs = append(foundArgs, cleanArg(argString[prevDelimiter:], stringOpener))
+	}
+	return foundArgs
+}
+
+func cleanArg(arg string, quoteRune rune) string {
+	cutset := []rune(" \t")
+	if quoteRune == '"' {
+		cutset = append(cutset, '"')
+	} else if quoteRune == '\'' {
+		cutset = append(cutset, '\'')
+	}
+	return strings.ReplaceAll(strings.ReplaceAll(strings.Trim(arg, string(cutset)), "\\'", "'"), "\\\"", "\"")
 }
 
 func trimAll(split []string) []string {
