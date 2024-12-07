@@ -43,7 +43,7 @@ func (c IconRecord) String() string {
 	return c.ToRecord().String()
 }
 func ReadIconRecordsIntoMap(reader io.Reader) map[string]IconRecord {
-	records := recfile.Read(reader)
+	records, _ := recfile.Read(reader)
 	categories := make(map[string]IconRecord, len(records))
 	for _, record := range records {
 		category := NewIconRecord(record)
@@ -53,7 +53,7 @@ func ReadIconRecordsIntoMap(reader io.Reader) map[string]IconRecord {
 }
 
 func ReadIconRecords(reader io.Reader) []IconRecord {
-	records := recfile.Read(reader)
+	records, _ := recfile.Read(reader)
 	categories := make([]IconRecord, 0, len(records))
 	for _, record := range records {
 		category := NewIconRecord(record)

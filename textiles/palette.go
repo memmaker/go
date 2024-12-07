@@ -120,11 +120,11 @@ func NewPaletteFromFileOrDefault(filename string) ColorPalette {
 }
 
 func ReadPaletteFile(file io.Reader) ColorPalette {
-	records := recfile.Read(file)
+	records, _ := recfile.Read(file)
 	return NewPaletteFromRecord(records[0])
 }
 func ReadPaletteFileOrDefault(file io.Reader) ColorPalette {
-	records := recfile.Read(file)
+	records, _ := recfile.Read(file)
 	if len(records) == 0 {
 		return NewDefaultPalette()
 	}
