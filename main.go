@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/memmaker/go/cview"
 	"github.com/memmaker/go/fxtools"
 	"github.com/memmaker/go/recfile"
 	"os"
@@ -20,6 +21,16 @@ type Address struct {
 	Street string
 	City   string
 	Zip    int
+}
+
+func startEditor(input []recfile.Record, onSave func(output []recfile.Record)) error {
+	app := cview.NewApplication()
+	app.EnableMouse(true)
+	defer app.HandlePanic()
+	app.SetAfterResizeFunc(func(width int, height int) {
+		//showTable(app, input, onSave)
+	})
+	return app.Run()
 }
 
 func main() {

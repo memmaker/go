@@ -177,6 +177,19 @@ func (r Record) ToMap(listSeperator string) DataMap {
     }
     return m
 }
+func (r Record) ToLowerMap(listSeperator string) DataMap {
+    m := make(map[string]string, len(r))
+    for _, field := range r {
+        fieldName := strings.ToLower(field.Name)
+        if _, exists := m[fieldName]; exists {
+            // append
+            m[fieldName] += listSeperator + field.Value
+        } else {
+            m[fieldName] = field.Value
+        }
+    }
+    return m
+}
 
 func (r Record) ToValueList() []string {
     result := make([]string, len(r))
