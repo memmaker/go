@@ -39,6 +39,7 @@ func FieldTypeFromString(fieldType string) FieldType {
 }
 
 type RecordSchema struct {
+    RecordType   string
     NameFormat   string
     KeyFieldName string
     Fields       map[string]FieldDetails
