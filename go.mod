@@ -4,6 +4,7 @@ go 1.22.1
 
 require (
 	code.rocketnine.space/tslocum/cbind v0.1.5
+	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/gopxl/beep v1.4.1
 	github.com/lucasb-eyer/go-colorful v1.2.0

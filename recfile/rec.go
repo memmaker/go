@@ -322,8 +322,10 @@ func (r *RecReader) ReadLine(line string) {
 
     // key field name
     // %key: field
-
     keyRegex := regexp.MustCompile(`^%key:\s*([a-zA-Z][a-zA-Z0-9_]*)`)
+
+    // %list: field
+    listRegex := regexp.MustCompile(`^%list:\s*([a-zA-Z][a-zA-Z0-9_]*)`)
 
     // eg. %rec: Article
     recordTypeRegex := regexp.MustCompile(`^%rec:\s*([a-zA-Z][a-zA-Z0-9_]*)`)
@@ -346,6 +348,12 @@ func (r *RecReader) ReadLine(line string) {
         fieldName := matches[1]
         recordType := matches[2]
         r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithReference(fieldName, recordType)
+        return
+    }
+
+    if matches := listRegex.FindStringSubmatch(line); matches != nil {
+        fieldName := matches[1]
+        r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithListType(fieldName)
         return
     }
 

@@ -47,16 +47,37 @@ type RecordSchema struct {
 }
 
 func (s RecordSchema) WithType(name string, fieldType FieldType) RecordSchema {
-    details := FieldDetails{
-        Name: name,
-        Type: fieldType,
-    }
     if s.Fields == nil {
         s.Fields = make(map[string]FieldDetails)
     }
-    s.Fields[name] = details
-    s.FieldOrder = append(s.FieldOrder, name)
+
+    if _, ok := s.Fields[name]; ok {
+        s.Fields[name] = s.Fields[name].WithType(fieldType)
+    } else {
+        details := FieldDetails{
+            Name: name,
+            Type: fieldType,
+        }
+        s.Fields[name] = details
+        s.FieldOrder = append(s.FieldOrder, name)
+    }
+
     return s
+}
+
+func (s RecordSchema) WithListType(fieldName string) RecordSchema {
+    newSchema := s
+    if newSchema.Fields == nil {
+        newSchema.Fields = make(map[string]FieldDetails)
+    }
+    if _, ok := newSchema.Fields[fieldName]; !ok {
+        newSchema = newSchema.WithType(fieldName, FieldTypeString)
+    }
+
+    fieldDetails := newSchema.Fields[fieldName]
+    fieldDetails.IsList = true
+    newSchema.Fields[fieldName] = fieldDetails
+    return newSchema
 }
 
 func (s RecordSchema) WithEnum(name string, enumValues []string) RecordSchema {
@@ -114,4 +135,10 @@ type FieldDetails struct {
     Type            FieldType
     EnumValues      []string
     ReferenceSchema string
+    IsList          bool
+}
+
+func (d FieldDetails) WithType(fieldType FieldType) FieldDetails {
+    d.Type = fieldType
+    return d
 }
