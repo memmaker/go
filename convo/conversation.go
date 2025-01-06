@@ -40,6 +40,14 @@ func (n ConversationNode) MoveOptionDown(index int) ConversationNode {
     return n
 }
 
+func (n ConversationNode) WithoutEffectByIndex(index int) ConversationNode {
+    if index >= len(n.Effects) {
+        return n
+    }
+    n.Effects = append(n.Effects[:index], n.Effects[index+1:]...)
+    return n
+}
+
 type OpeningBranch struct {
     Name            string
     BranchCondition *govaluate.EvaluableExpression
@@ -102,6 +110,10 @@ func (c *Conversation) GetAllNodes() map[string]ConversationNode {
 
 func (c *Conversation) RemoveOptionByIndex(nodeName string, index int) {
     c.nodes[nodeName] = c.nodes[nodeName].WithoutOptionByIndex(index)
+}
+
+func (c *Conversation) RemoveEffectByIndex(nodeName string, index int) {
+    c.nodes[nodeName] = c.nodes[nodeName].WithoutEffectByIndex(index)
 }
 
 func (c *Conversation) MoveOptionUp(nodeName string, index int) {
