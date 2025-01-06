@@ -12,8 +12,32 @@ type ConversationNode struct {
     Options []conversationOption
 }
 
-func (n *ConversationNode) IsEmpty() bool {
+func (n ConversationNode) IsEmpty() bool {
     return n.Name == "" && n.NpcText == "" && len(n.Options) == 0
+}
+
+func (n ConversationNode) WithoutOptionByIndex(index int) ConversationNode {
+    if index >= len(n.Options) {
+        return n
+    }
+    n.Options = append(n.Options[:index], n.Options[index+1:]...)
+    return n
+}
+
+func (n ConversationNode) MoveOptionUp(index int) ConversationNode {
+    if index <= 0 || index >= len(n.Options) {
+        return n
+    }
+    n.Options[index], n.Options[index-1] = n.Options[index-1], n.Options[index]
+    return n
+}
+
+func (n ConversationNode) MoveOptionDown(index int) ConversationNode {
+    if index < 0 || index >= len(n.Options)-1 {
+        return n
+    }
+    n.Options[index], n.Options[index+1] = n.Options[index+1], n.Options[index]
+    return n
 }
 
 type OpeningBranch struct {
@@ -74,6 +98,18 @@ func (c *Conversation) GetNodeByName(node string) ConversationNode {
 
 func (c *Conversation) GetAllNodes() map[string]ConversationNode {
     return c.nodes
+}
+
+func (c *Conversation) RemoveOptionByIndex(nodeName string, index int) {
+    c.nodes[nodeName] = c.nodes[nodeName].WithoutOptionByIndex(index)
+}
+
+func (c *Conversation) MoveOptionUp(nodeName string, index int) {
+    c.nodes[nodeName] = c.nodes[nodeName].MoveOptionUp(index)
+}
+
+func (c *Conversation) MoveOptionDown(nodeName string, index int) {
+    c.nodes[nodeName] = c.nodes[nodeName].MoveOptionDown(index)
 }
 
 func (c *Conversation) GetOpeningBranchByName(name string) OpeningBranch {
