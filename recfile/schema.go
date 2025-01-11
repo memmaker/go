@@ -83,13 +83,21 @@ func (s RecordSchema) WithListType(fieldName string) RecordSchema {
 
 func (s RecordSchema) WithEnum(name string, enumValues []string) RecordSchema {
     name = strings.ToLower(name)
-    details := FieldDetails{
-        Name:       name,
-        Type:       FieldTypeEnum,
-        EnumValues: enumValues,
+    if s.Fields == nil {
+        s.Fields = make(map[string]FieldDetails)
     }
-    s.Fields[name] = details
-    s.FieldOrder = append(s.FieldOrder, name)
+    if _, ok := s.Fields[name]; ok {
+        s.Fields[name] = s.Fields[name].WithEnum(name, enumValues)
+    } else {
+        details := FieldDetails{
+            Name:       name,
+            Type:       FieldTypeEnum,
+            EnumValues: enumValues,
+        }
+        s.Fields[name] = details
+        s.FieldOrder = append(s.FieldOrder, name)
+    }
+
     return s
 }
 
@@ -144,5 +152,12 @@ type FieldDetails struct {
 
 func (d FieldDetails) WithType(fieldType FieldType) FieldDetails {
     d.Type = fieldType
+    return d
+}
+
+func (d FieldDetails) WithEnum(name string, values []string) FieldDetails {
+    d.Name = name
+    d.Type = FieldTypeEnum
+    d.EnumValues = values
     return d
 }
