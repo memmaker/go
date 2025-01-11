@@ -47,6 +47,28 @@ func (n ConversationNode) WithoutEffectByIndex(index int) ConversationNode {
     n.Effects = append(n.Effects[:index], n.Effects[index+1:]...)
     return n
 }
+func (n ConversationNode) WithEffect(effect string) ConversationNode {
+    n.Effects = append(n.Effects, effect)
+    return n
+}
+
+func (n ConversationNode) WithOption(optionText string) ConversationNode {
+    n.Options = append(n.Options, conversationOption{PlayerText: optionText})
+    return n
+}
+
+func (n ConversationNode) WithNPCResponse(text string) ConversationNode {
+    n.NpcText = text
+    return n
+}
+
+func (n ConversationNode) WithOptionText(index int, text string) ConversationNode {
+    if index >= len(n.Options) {
+        return n
+    }
+    n.Options[index].PlayerText = text
+    return n
+}
 
 type OpeningBranch struct {
     Name            string
@@ -114,6 +136,22 @@ func (c *Conversation) RemoveOptionByIndex(nodeName string, index int) {
 
 func (c *Conversation) RemoveEffectByIndex(nodeName string, index int) {
     c.nodes[nodeName] = c.nodes[nodeName].WithoutEffectByIndex(index)
+}
+
+func (c *Conversation) AddEffect(nodeName string, effect string) {
+    c.nodes[nodeName] = c.nodes[nodeName].WithEffect(effect)
+}
+
+func (c *Conversation) AddOption(nodeName string, optionText string) {
+    c.nodes[nodeName] = c.nodes[nodeName].WithOption(optionText)
+}
+
+func (c *Conversation) SetNPCResponse(nodeName string, text string) {
+    c.nodes[nodeName] = c.nodes[nodeName].WithNPCResponse(text)
+}
+
+func (c *Conversation) SetOptionText(nodeName string, index int, text string) {
+    c.nodes[nodeName] = c.nodes[nodeName].WithOptionText(index, text)
 }
 
 func (c *Conversation) MoveOptionUp(nodeName string, index int) {

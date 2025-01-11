@@ -392,8 +392,10 @@ func (r *RecReader) ReadLine(line string) {
     if fieldNamePattern.MatchString(line) {
         r.tryCommitCurrentField()
         matches := fieldNamePattern.FindStringSubmatch(line)
+        foundFieldName := matches[1]
+        foundFieldName = strings.ToLower(strings.Trim(foundFieldName, " \t"))
         r.currentField = Field{
-            Name:  matches[1],
+            Name:  foundFieldName,
             Value: strings.Trim(line[len(matches[0]):], " \t"),
         }
     } else if line == "" {

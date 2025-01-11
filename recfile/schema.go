@@ -50,7 +50,7 @@ func (s RecordSchema) WithType(name string, fieldType FieldType) RecordSchema {
     if s.Fields == nil {
         s.Fields = make(map[string]FieldDetails)
     }
-
+    name = strings.ToLower(name)
     if _, ok := s.Fields[name]; ok {
         s.Fields[name] = s.Fields[name].WithType(fieldType)
     } else {
@@ -66,6 +66,7 @@ func (s RecordSchema) WithType(name string, fieldType FieldType) RecordSchema {
 }
 
 func (s RecordSchema) WithListType(fieldName string) RecordSchema {
+    fieldName = strings.ToLower(fieldName)
     newSchema := s
     if newSchema.Fields == nil {
         newSchema.Fields = make(map[string]FieldDetails)
@@ -81,6 +82,7 @@ func (s RecordSchema) WithListType(fieldName string) RecordSchema {
 }
 
 func (s RecordSchema) WithEnum(name string, enumValues []string) RecordSchema {
+    name = strings.ToLower(name)
     details := FieldDetails{
         Name:       name,
         Type:       FieldTypeEnum,
@@ -92,11 +94,13 @@ func (s RecordSchema) WithEnum(name string, enumValues []string) RecordSchema {
 }
 
 func (s RecordSchema) WithKeyFieldName(keyFieldName string) RecordSchema {
+    keyFieldName = strings.ToLower(keyFieldName)
     s.KeyFieldName = keyFieldName
     return s
 }
 
 func (s RecordSchema) WithReference(name string, referenceSchema string) RecordSchema {
+    name = strings.ToLower(name)
     details := FieldDetails{
         Name:            name,
         Type:            FieldTypeReference,
