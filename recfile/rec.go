@@ -305,7 +305,6 @@ type RecReader struct {
     currentField      Field
     linePart          string
     currentRecordType string
-    fieldNamePattern  *regexp.Regexp
     plusPrefixPattern *regexp.Regexp
     fieldTypeRegex    *regexp.Regexp
     refRegex          *regexp.Regexp
@@ -427,9 +426,9 @@ func (r *RecReader) ReadLine(line string) {
         return
     }
 
-    if r.fieldNamePattern.MatchString(line) {
+    if fieldNameRegex.MatchString(line) {
         r.tryCommitCurrentField()
-        matches := r.fieldNamePattern.FindStringSubmatch(line)
+        matches := fieldNameRegex.FindStringSubmatch(line)
         foundFieldName := matches[1]
         r.currentField = Field{
             Name:  foundFieldName,
