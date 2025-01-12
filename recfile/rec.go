@@ -177,6 +177,19 @@ func (r Record) ToMap(listSeperator string) DataMap {
     }
     return m
 }
+
+func (r Record) ToListMap() map[string][]string {
+    m := make(map[string][]string, len(r))
+    for _, field := range r {
+        if _, exists := m[field.Name]; exists {
+            m[field.Name] = append(m[field.Name], field.Value)
+        } else {
+            m[field.Name] = []string{field.Value}
+        }
+    }
+    return m
+}
+
 func (r Record) ToLowerMap(listSeperator string) DataMap {
     m := make(map[string]string, len(r))
     for _, field := range r {
@@ -292,9 +305,21 @@ type RecReader struct {
     currentField      Field
     linePart          string
     currentRecordType string
+    fieldNamePattern  *regexp.Regexp
+    plusPrefixPattern *regexp.Regexp
+    fieldTypeRegex    *regexp.Regexp
+    refRegex          *regexp.Regexp
+    enumRegex         *regexp.Regexp
+    keyRegex          *regexp.Regexp
+    listRegex         *regexp.Regexp
+    recordTypeRegex   *regexp.Regexp
+    nameFormatRegex   *regexp.Regexp
 }
 
+var fieldNameRegex = regexp.MustCompile(`^([a-zA-Z%][a-zA-Z0-9_]*):[\t ]?`)
+
 func NewReader() *RecReader {
+
     return &RecReader{
         records:           make(map[string][]Record),
         schemas:           make(map[string]RecordSchema),
@@ -302,62 +327,57 @@ func NewReader() *RecReader {
         currentField:      Field{},
         linePart:          "",
         currentRecordType: "default",
+        plusPrefixPattern: regexp.MustCompile(`^\+\s?`),
+        // types
+        // %type: field_list type_name_or_description
+        fieldTypeRegex: regexp.MustCompile(`^%type:\s*([a-zA-Z][a-zA-Z0-9_]*)\s+([a-zA-Z][a-zA-Z0-9_]*)`),
+
+        // references
+        // %ref: field_name record_type
+        refRegex: regexp.MustCompile(`^%ref:\s*([a-zA-Z][a-zA-Z0-9_]*)\s+([a-zA-Z][a-zA-Z0-9_]*)`),
+
+        // enums
+        // %typedef: Status_t enum NEW STARTED DONE CLOSED
+        enumRegex: regexp.MustCompile(`^%typedef:\s*([a-zA-Z][a-zA-Z0-9_]*)\s+enum\s+(.*)`),
+
+        // %list: field
+        listRegex: regexp.MustCompile(`^%list:\s*([a-zA-Z][a-zA-Z0-9_]*)`),
+
+        // Label formal
+        // %label: {{ .Name }}
+        nameFormatRegex: regexp.MustCompile(`^%label:\s?(.*)`),
+
+        // record type
+        // eg. %rec: Article
+        recordTypeRegex: regexp.MustCompile(`^%rec:\s*([a-zA-Z][a-zA-Z0-9_]*)`),
+
+        // key field name
+        // %key: field
+        keyRegex: regexp.MustCompile(`^%key:\s*([a-zA-Z][a-zA-Z0-9_]*)`),
     }
 }
 func (r *RecReader) ReadLine(line string) {
-    //scanner := bufio.NewScanner(file)
-    fieldNamePattern := regexp.MustCompile(`^([a-zA-Z%][a-zA-Z0-9_]*):[\t ]?`)
-    plusPrefixPattern := regexp.MustCompile(`^\+\s?`)
-    // types
-    // %type: field_list type_name_or_description
-    fieldTypeRegex := regexp.MustCompile(`^%type:\s*([a-zA-Z][a-zA-Z0-9_]*)\s+([a-zA-Z][a-zA-Z0-9_]*)`)
-
-    // references
-    // %ref: field_name record_type
-    refRegex := regexp.MustCompile(`^%ref:\s*([a-zA-Z][a-zA-Z0-9_]*)\s+([a-zA-Z][a-zA-Z0-9_]*)`)
-
-    // enums
-    // %typedef: Status_t enum NEW STARTED DONE CLOSED
-    enumRegex := regexp.MustCompile(`^%typedef:\s*([a-zA-Z][a-zA-Z0-9_]*)\s+enum\s+(.*)`)
-
-    // key field name
-    // %key: field
-    keyRegex := regexp.MustCompile(`^%key:\s*([a-zA-Z][a-zA-Z0-9_]*)`)
-
-    // %list: field
-    listRegex := regexp.MustCompile(`^%list:\s*([a-zA-Z][a-zA-Z0-9_]*)`)
-
-    // eg. %rec: Article
-    recordTypeRegex := regexp.MustCompile(`^%rec:\s*([a-zA-Z][a-zA-Z0-9_]*)`)
     line = r.linePart + line
     r.linePart = ""
 
     if strings.HasPrefix(line, "#") {
         return
     }
-    if plusPrefixPattern.MatchString(line) {
-        line = plusPrefixPattern.ReplaceAllString(line, "\n")
-    }
 
-    if matches := keyRegex.FindStringSubmatch(line); matches != nil {
-        r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithKeyFieldName(matches[1])
+    if strings.HasSuffix(line, "\\") {
+        r.linePart = line[:len(line)-1]
         return
     }
 
-    if matches := refRegex.FindStringSubmatch(line); matches != nil {
-        fieldName := matches[1]
-        recordType := matches[2]
-        r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithReference(fieldName, recordType)
+    if line == "" {
+        r.tryCommitCurrentField()
+        r.currentField = Field{}
+        r.tryCommitCurrentRecord()
+        r.currentRecord = make([]Field, 0)
         return
     }
 
-    if matches := listRegex.FindStringSubmatch(line); matches != nil {
-        fieldName := matches[1]
-        r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithListType(fieldName)
-        return
-    }
-
-    if matches := recordTypeRegex.FindStringSubmatch(line); matches != nil {
+    if matches := r.recordTypeRegex.FindStringSubmatch(line); matches != nil {
         r.tryCommitCurrentField()
         r.tryCommitCurrentRecord()
         r.currentRecord = make([]Field, 0)
@@ -370,41 +390,58 @@ func (r *RecReader) ReadLine(line string) {
         return
     }
 
-    if matches := fieldTypeRegex.FindStringSubmatch(line); matches != nil {
+    if matches := r.keyRegex.FindStringSubmatch(line); matches != nil {
+        r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithKeyFieldName(matches[1])
+        return
+    }
+
+    if matches := r.nameFormatRegex.FindStringSubmatch(line); matches != nil {
+        r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithNameFormat(matches[1])
+        return
+    }
+
+    if matches := r.refRegex.FindStringSubmatch(line); matches != nil {
+        fieldName := matches[1]
+        recordType := matches[2]
+        r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithReference(fieldName, recordType)
+        return
+    }
+
+    if matches := r.listRegex.FindStringSubmatch(line); matches != nil {
+        fieldName := matches[1]
+        r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithListType(fieldName)
+        return
+    }
+
+    if matches := r.fieldTypeRegex.FindStringSubmatch(line); matches != nil {
         fieldName := matches[1]
         fieldType := matches[2]
         r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithType(fieldName, FieldTypeFromString(fieldType))
         return
     }
 
-    if matches := enumRegex.FindStringSubmatch(line); matches != nil {
+    if matches := r.enumRegex.FindStringSubmatch(line); matches != nil {
         fieldName := matches[1]
         enumValues := strings.Split(matches[2], " ")
         r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithEnum(fieldName, enumValues)
         return
     }
 
-    if strings.HasSuffix(line, "\\") {
-        r.linePart = line[:len(line)-1]
-        return
-    }
-
-    if fieldNamePattern.MatchString(line) {
+    if r.fieldNamePattern.MatchString(line) {
         r.tryCommitCurrentField()
-        matches := fieldNamePattern.FindStringSubmatch(line)
+        matches := r.fieldNamePattern.FindStringSubmatch(line)
         foundFieldName := matches[1]
-        foundFieldName = strings.ToLower(strings.Trim(foundFieldName, " \t"))
         r.currentField = Field{
             Name:  foundFieldName,
             Value: strings.Trim(line[len(matches[0]):], " \t"),
         }
-    } else if line == "" {
-        r.tryCommitCurrentField()
-        r.currentField = Field{}
-        r.tryCommitCurrentRecord()
-        r.currentRecord = make([]Field, 0)
-    } else {
+        return
+    }
+
+    if r.plusPrefixPattern.MatchString(line) {
+        line = r.plusPrefixPattern.ReplaceAllString(line, "\n")
         r.currentField.Value += strings.Trim(line, " \t")
+        return
     }
 }
 
@@ -433,6 +470,7 @@ func (r *RecReader) ReadLines(data []string) (map[string][]Record, map[string]Re
     }
     return r.End()
 }
+
 func defaultOnly(records map[string][]Record, schemas map[string]RecordSchema) ([]Record, RecordSchema) {
     if _, ok := records["default"]; !ok {
         firstKey := ""
@@ -497,34 +535,77 @@ func WriteCSV(output io.Writer, fieldNames []string, records []Record) {
     csvWriter.Flush()
 }
 
-func WriteMulti(file io.Writer, recordsInCategories map[string][]Record) error {
-    writeString := func(s string) error {
-        _, err := file.Write([]byte(s))
+func WriteSchema(file io.Writer, schema RecordSchema) error {
+    for _, field := range schema.ToRecord() {
+        err := writeField(file, field)
+        if err != nil {
+            return err
+        }
+    }
+    _, err := file.Write([]byte("\n"))
+    return err
+}
+
+func writeField(file io.Writer, field Field) error {
+    _, err := file.Write([]byte(field.Name + ": " + field.EscapedValue() + "\n"))
+    return err
+}
+
+func WriteMultiWithSchema(file io.Writer, recordsInCategories map[string][]Record, schemas map[string]RecordSchema) error {
+    for recordCategory, records := range recordsInCategories {
+        catSchema := schemas[recordCategory]
+        err := WriteWithSchema(file, records, catSchema)
+        if err != nil {
+            return err
+        }
+    }
+    return nil
+}
+
+func WriteWithSchema(file io.Writer, records []Record, catSchema RecordSchema) error {
+    schemaErr := WriteSchema(file, catSchema)
+    if schemaErr != nil {
+        return schemaErr
+    }
+    _, err := file.Write([]byte("\n"))
+    if err != nil {
         return err
     }
-    sanitizeFieldname := func(s string) string {
-        saneFieldname := strings.ReplaceAll(s, " ", "_")
-        if saneFieldname != s {
-            println(fmt.Sprintf("WARNING - Sanitizing fieldname: '%s' -> '%s'", s, saneFieldname))
-        }
-        return saneFieldname
+    err = WriteRecords(file, records)
+    if err != nil {
+        return err
     }
+    return nil
+}
+
+func WriteMulti(file io.Writer, recordsInCategories map[string][]Record) error {
     for recordCategory, records := range recordsInCategories {
-        catErr := writeString(fmt.Sprintf("%%rec: %s\n\n", recordCategory))
+        _, catErr := file.Write([]byte(fmt.Sprintf("%%rec: %s\n\n", recordCategory)))
         if catErr != nil {
             return catErr
         }
-        for _, record := range records {
-            for _, field := range record {
-                err := writeString(sanitizeFieldname(field.Name) + ": " + field.EscapedValue() + "\n")
-                if err != nil {
-                    return err
-                }
+        err := WriteRecords(file, records)
+        if err != nil {
+            return err
+        }
+    }
+    return nil
+}
+
+func WriteRecords(file io.Writer, records []Record) error {
+    for _, record := range records {
+        for _, field := range record {
+            if !fieldNameRegex.MatchString(field.Name) {
+                return fmt.Errorf("invalid field name: %s", field.Name)
             }
-            err := writeString("\n")
+            err := writeField(file, field)
             if err != nil {
                 return err
             }
+        }
+        _, err := file.Write([]byte("\n"))
+        if err != nil {
+            return err
         }
     }
     return nil

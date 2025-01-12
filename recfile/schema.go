@@ -8,6 +8,27 @@ import (
 
 type FieldType uint8
 
+func (t FieldType) String() string {
+    switch t {
+    case FieldTypeString:
+        return "line"
+    case FieldTypeStringMultiline:
+        return "multiline"
+    case FieldTypeInt:
+        return "int"
+    case FieldTypeFloat:
+        return "real"
+    case FieldTypeBool:
+        return "bool"
+    case FieldTypeReference:
+        return "reference"
+    case FieldTypeEnum:
+        return "enum"
+    default:
+        return "line"
+    }
+}
+
 const (
     FieldTypeString FieldType = iota
     FieldTypeStringMultiline
@@ -46,27 +67,48 @@ type RecordSchema struct {
     FieldOrder   []string
 }
 
+func (s RecordSchema) ToRecord() Record {
+    rec := Record{
+        Field{Name: "%rec", Value: s.RecordType},
+        Field{Name: "%key", Value: s.KeyFieldName},
+        Field{Name: "%label", Value: s.NameFormat},
+    }
+    for _, fieldName := range s.FieldOrder {
+        fieldDetails := s.Fields[fieldName]
+        if fieldDetails.Type == FieldTypeEnum {
+            enumTypeDef := fmt.Sprintf("%s enum %s", fieldName, strings.Join(fieldDetails.EnumValues, " "))
+            rec = append(rec, Field{Name: "%typedef", Value: enumTypeDef})
+        } else if fieldDetails.Type == FieldTypeReference {
+            rec = append(rec, Field{Name: "%ref", Value: fmt.Sprintf("%s %s", fieldName, fieldDetails.ReferenceSchema)})
+        } else {
+            rec = append(rec, Field{Name: "%type", Value: fmt.Sprintf("%s %s", fieldName, fieldDetails.Type.String())})
+        }
+        if fieldDetails.IsList {
+            rec = append(rec, Field{Name: "%list", Value: fieldName})
+        }
+    }
+    return rec
+}
 func (s RecordSchema) WithType(name string, fieldType FieldType) RecordSchema {
     if s.Fields == nil {
         s.Fields = make(map[string]FieldDetails)
     }
-    name = strings.ToLower(name)
     if _, ok := s.Fields[name]; ok {
         s.Fields[name] = s.Fields[name].WithType(fieldType)
-    } else {
-        details := FieldDetails{
-            Name: name,
-            Type: fieldType,
-        }
-        s.Fields[name] = details
-        s.FieldOrder = append(s.FieldOrder, name)
+        return s
     }
+
+    details := FieldDetails{
+        Name: name,
+        Type: fieldType,
+    }
+    s.Fields[name] = details
+    s.FieldOrder = append(s.FieldOrder, name)
 
     return s
 }
 
 func (s RecordSchema) WithListType(fieldName string) RecordSchema {
-    fieldName = strings.ToLower(fieldName)
     newSchema := s
     if newSchema.Fields == nil {
         newSchema.Fields = make(map[string]FieldDetails)
@@ -82,33 +124,37 @@ func (s RecordSchema) WithListType(fieldName string) RecordSchema {
 }
 
 func (s RecordSchema) WithEnum(name string, enumValues []string) RecordSchema {
-    name = strings.ToLower(name)
     if s.Fields == nil {
         s.Fields = make(map[string]FieldDetails)
     }
     if _, ok := s.Fields[name]; ok {
         s.Fields[name] = s.Fields[name].WithEnum(name, enumValues)
-    } else {
-        details := FieldDetails{
-            Name:       name,
-            Type:       FieldTypeEnum,
-            EnumValues: enumValues,
-        }
-        s.Fields[name] = details
-        s.FieldOrder = append(s.FieldOrder, name)
+        return s
     }
 
+    details := FieldDetails{
+        Name:       name,
+        Type:       FieldTypeEnum,
+        EnumValues: enumValues,
+    }
+    s.Fields[name] = details
+    s.FieldOrder = append(s.FieldOrder, name)
     return s
 }
 
 func (s RecordSchema) WithKeyFieldName(keyFieldName string) RecordSchema {
-    keyFieldName = strings.ToLower(keyFieldName)
     s.KeyFieldName = keyFieldName
     return s
 }
 
 func (s RecordSchema) WithReference(name string, referenceSchema string) RecordSchema {
-    name = strings.ToLower(name)
+    if s.Fields == nil {
+        s.Fields = make(map[string]FieldDetails)
+    }
+    if _, ok := s.Fields[name]; ok {
+        s.Fields[name] = s.Fields[name].WithReference(name, referenceSchema)
+        return s
+    }
     details := FieldDetails{
         Name:            name,
         Type:            FieldTypeReference,
@@ -142,6 +188,11 @@ func (s RecordSchema) IsEmpty() bool {
     return len(s.Fields) == 0
 }
 
+func (s RecordSchema) WithNameFormat(nameFormat string) RecordSchema {
+    s.NameFormat = nameFormat
+    return s
+}
+
 type FieldDetails struct {
     Name            string
     Type            FieldType
@@ -159,5 +210,12 @@ func (d FieldDetails) WithEnum(name string, values []string) FieldDetails {
     d.Name = name
     d.Type = FieldTypeEnum
     d.EnumValues = values
+    return d
+}
+
+func (d FieldDetails) WithReference(name string, schema string) FieldDetails {
+    d.Name = name
+    d.Type = FieldTypeReference
+    d.ReferenceSchema = schema
     return d
 }
