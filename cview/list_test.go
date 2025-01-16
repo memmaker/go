@@ -22,7 +22,7 @@ func TestList(t *testing.T) {
 		t.Errorf("failed to initialize List: expected current item 0, got %d", l.GetCurrentItemIndex())
 	}
 
-	// Add item 0
+	// Append item 0
 
 	itemA := NewListItem(listTextA)
 	itemA.SetSecondaryText(listTextB)
@@ -43,7 +43,7 @@ func TestList(t *testing.T) {
 		t.Errorf("failed to update List: expected secondary text %s, got %s", listTextB, secondaryText)
 	}
 
-	// Add item 1
+	// Append item 1
 
 	itemB := NewListItem(listTextB)
 	itemB.SetSecondaryText(listTextC)

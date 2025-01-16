@@ -52,7 +52,7 @@ func main() {
 		println("Processing", file.Name())
 		filePath := path.Join(pathname, file.Name())
 		openFile := fxtools.MustOpen(filePath)
-		repoman.AddRepo(openFile)
+		repoman.AddRepos(openFile)
 	}
 
 	println(repoman.Status())

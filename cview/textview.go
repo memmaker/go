@@ -720,13 +720,13 @@ func (t *TextView) GetRegionText(regionID string) string {
 				continue
 			}
 
-			// Add this rune.
+			// Append this rune.
 			if currentRegionID == regionID {
 				buffer.WriteByte(ch)
 			}
 		}
 
-		// Add newline.
+		// Append newline.
 		if currentRegionID == regionID {
 			buffer.WriteRune('\n')
 		}
@@ -892,7 +892,7 @@ func (t *TextView) reindexBuffer(width int) {
 					extract = str[:to]
 				}
 				if t.wordWrap && len(extract) < len(str) {
-					// Add any spaces from the next line.
+					// Append any spaces from the next line.
 					if spaces := spacePattern.FindStringIndex(str[len(extract):]); spaces != nil && spaces[0] == 0 {
 						extract = str[:len(extract)+spaces[1]]
 					}

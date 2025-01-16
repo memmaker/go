@@ -417,7 +417,7 @@ func PrintStyle(screen tcell.Screen, text []byte, x, y, maxWidth, align int, sty
 				}
 			}
 
-			// Add tag offsets and determine start style.
+			// Append tag offsets and determine start style.
 			var (
 				colorPos, escapePos, tagOffset               int
 				foregroundColor, backgroundColor, attributes string

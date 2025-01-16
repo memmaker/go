@@ -90,7 +90,7 @@ func (n *TreeNode) walk(callback func(node, parent *TreeNode) bool) {
 			continue
 		}
 
-		// Add children in reverse order.
+		// Append children in reverse order.
 		for index := len(node.children) - 1; index >= 0; index-- {
 			node.children[index].parent = node
 			nodes = append(nodes, node.children[index])
@@ -601,7 +601,7 @@ func (t *TreeView) process() {
 			node.textX = 0
 		}
 
-		// Add the node to the list.
+		// Append the node to the list.
 		if node.level >= t.topLevel {
 			// This node will be visible.
 			if node.textX > maxTextX {

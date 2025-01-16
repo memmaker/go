@@ -53,7 +53,7 @@ func NewPointFromString(s string) (Point, error) {
 }
 
 // Shift returns a new point with coordinates shifted by (x,y). It's a
-// shorthand for p.Add(Point{x,y}).
+// shorthand for p.Append(Point{x,y}).
 func (p Point) Shift(x, y int) Point {
 	return Point{X: p.X + x, Y: p.Y + y}
 }

@@ -16,7 +16,7 @@ type HDRColor struct {
 
 // How to achieve lighting effects:
 // 1. Use a HDR color model (colors with values greater than 1.0)
-// 2. Add up all the light sources in the scene for each cell
+// 2. Append up all the light sources in the scene for each cell
 // 3. Apply the combined light to the cell's color by multiplying the light color with the cell's color
 // 4. Use a tone mapping algorithm to convert HDR colors to LDR colors
 

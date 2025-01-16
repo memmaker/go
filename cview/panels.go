@@ -410,7 +410,7 @@ func (p *Pages) AddPage(name string, item Primitive, resize, visible bool) {
 	p.AddPanel(name, item, resize, visible)
 }
 
-// AddAndSwitchToPage calls Add(), then SwitchTo() on that newly added panel.
+// AddAndSwitchToPage calls Append(), then SwitchTo() on that newly added panel.
 func (p *Pages) AddAndSwitchToPage(name string, item Primitive, resize bool) {
 	p.AddPanel(name, item, resize, true)
 	p.SetCurrentPanel(name)

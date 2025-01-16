@@ -18,7 +18,7 @@ func TestProgressBar(t *testing.T) {
 		t.Errorf("failed to initialize ProgressBar: incorrect initial state: expected incomplete, got complete")
 	}
 
-	// Add progress
+	// Append progress
 
 	p.AddProgress(25)
 	if p.GetProgress() != 25 {

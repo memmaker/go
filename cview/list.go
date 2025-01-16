@@ -1084,7 +1084,7 @@ func (l *List) Draw(screen tcell.Screen) {
 		lheight := len(ctx.items)
 		lwidth := maxWidth
 
-		// Add space for borders
+		// Append space for borders
 		lwidth += 2
 		lheight += 2
 
@@ -1122,7 +1122,7 @@ func (l *List) Draw(screen tcell.Screen) {
 		}
 
 		if ctx.scrollBarVisibility == ScrollBarAlways || (ctx.scrollBarVisibility == ScrollBarAuto && len(ctx.items) > lheight) {
-			lwidth++ // Add space for scroll bar
+			lwidth++ // Append space for scroll bar
 		}
 
 		ctx.SetRect(cx, cy, lwidth, lheight)

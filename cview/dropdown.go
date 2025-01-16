@@ -665,7 +665,7 @@ func (d *DropDown) Draw(screen tcell.Screen) {
 		}
 		lwidth := maxWidth
 		if d.list.scrollBarVisibility == ScrollBarAlways || (d.list.scrollBarVisibility == ScrollBarAuto && len(d.options) > lheight) {
-			lwidth++ // Add space for scroll bar
+			lwidth++ // Append space for scroll bar
 		}
 		if lwidth < fieldWidth {
 			lwidth = fieldWidth

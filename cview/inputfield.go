@@ -695,7 +695,7 @@ func (i *InputField) Draw(screen tcell.Screen) {
 			lheight = sheight - ly
 		}
 		if i.autocompleteList.scrollBarVisibility == ScrollBarAlways || (i.autocompleteList.scrollBarVisibility == ScrollBarAuto && i.autocompleteList.GetItemCount() > lheight) {
-			lwidth++ // Add space for scroll bar
+			lwidth++ // Append space for scroll bar
 		}
 		i.autocompleteList.SetRect(lx, ly, lwidth, lheight)
 		i.autocompleteList.Draw(screen)
@@ -749,7 +749,7 @@ func (i *InputField) InputHandler() func(event *tcell.EventKey, setFocus func(p 
 			i.cursorPos = len(i.text) - len(regexLeftWord.ReplaceAll(i.text[i.cursorPos:], nil))
 		}
 
-		// Add character function. Returns whether or not the rune character is
+		// Append character function. Returns whether or not the rune character is
 		// accepted.
 		add := func(r rune) bool {
 			newText := append(append(i.text[:i.cursorPos], []byte(string(r))...), i.text[i.cursorPos:]...)
