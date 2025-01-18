@@ -30,7 +30,23 @@ func (r *RecordRepository) Merge(records []Record) {
 }
 
 func (r *RecordRepository) ReplaceById(id string, record Record) {
-	r.Records[id] = record
+	recordId := record.FindValueForKeyIgnoreCase(r.Schema.KeyFieldName)
+	if recordId == id {
+		r.Records[id] = record
+	} else { // ID has changed
+		r.DeleteById(recordId)
+		r.Append(record)
+	}
+}
+
+func (r *RecordRepository) DeleteById(id string) {
+	delete(r.Records, id)
+	for i, recordID := range r.IDs {
+		if recordID == id {
+			r.IDs = append(r.IDs[:i], r.IDs[i+1:]...)
+			return
+		}
+	}
 }
 
 func (r *RecordRepository) FindById(id string) Record {
