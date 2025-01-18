@@ -70,8 +70,12 @@ type RecordSchema struct {
 func (s RecordSchema) ToRecord() Record {
 	rec := Record{
 		Field{Name: "%rec", Value: s.RecordType},
-		Field{Name: "%key", Value: s.KeyFieldName},
-		Field{Name: "%label", Value: s.NameFormat},
+	}
+	if s.KeyFieldName != "" {
+		rec = append(rec, Field{Name: "%key", Value: s.KeyFieldName})
+	}
+	if s.NameFormat != "" {
+		rec = append(rec, Field{Name: "%label", Value: s.NameFormat})
 	}
 	for _, fieldName := range s.FieldOrder {
 		fieldDetails := s.Fields[fieldName]
