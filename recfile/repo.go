@@ -2,16 +2,16 @@ package recfile
 
 import (
     "fmt"
-    "io"
     "os"
     "slices"
     "strings"
 )
 
 type RecordRepository struct {
-    Schema  RecordSchema
-    Records map[string]Record
-    IDs     []string
+    Schema      RecordSchema
+    Records     map[string]Record
+    IDs         []string
+    BackingFile string
 }
 
 func (r *RecordRepository) AddEnumToSchema(fieldName string, values []string) {
@@ -80,23 +80,31 @@ func (r *RecordRepository) SortByID() {
     slices.Sort(r.IDs)
 }
 
-func (r *RecordRepository) Write(w io.Writer) error {
+func (r *RecordRepository) Write() error {
     var recordsAsList []Record
     for _, id := range r.IDs {
         record := r.Records[id]
         recordsAsList = append(recordsAsList, record)
     }
-
-    return WriteWithSchema(w, recordsAsList, r.Schema)
+    file, err := os.Create(r.BackingFile)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    return WriteWithSchema(file, recordsAsList, r.Schema)
 }
 
-func NewRecordRepository(recordsAsList []Record, schema RecordSchema) *RecordRepository {
+func NewRecordRepository(filename string) *RecordRepository {
+    file, _ := os.Open(filename)
+    records, schema := ReadAndClose(file)
+
     repo := &RecordRepository{
-        Schema:  schema,
-        Records: make(map[string]Record, len(recordsAsList)),
-        IDs:     make([]string, len(recordsAsList)),
+        Schema:      schema,
+        BackingFile: filename,
+        Records:     make(map[string]Record, len(records)),
+        IDs:         make([]string, len(records)),
     }
-    for recordIndex, record := range recordsAsList {
+    for recordIndex, record := range records {
         id := record.FindValueForKeyIgnoreCase(schema.KeyFieldName)
         repo.Records[id] = record
         repo.IDs[recordIndex] = id
@@ -118,23 +126,11 @@ func (r *RepoMan) GetRepo(schemaName string) *RecordRepository {
     return r.repos[schemaName]
 }
 
-func (r *RepoMan) AddRepos(fileName string) []string {
-    var addedRepos []string
-    file, _ := os.Open(fileName)
-    recordsByType, schemas := ReadMultiAndClose(file)
-    for schemaName, records := range recordsByType {
-        if _, exists := r.repos[schemaName]; exists {
-            r.repos[schemaName].Merge(records)
-            if r.repos[schemaName].Schema.IsEmpty() && !schemas[schemaName].IsEmpty() {
-                r.repos[schemaName].Schema = schemas[schemaName]
-            }
-        } else {
-            schema := schemas[schemaName]
-            r.repos[schemaName] = NewRecordRepository(records, schema)
-            addedRepos = append(addedRepos, schemaName)
-        }
-    }
-    return addedRepos
+func (r *RepoMan) AddRepo(fileName string) string {
+    repo := NewRecordRepository(fileName)
+    schemaName := repo.Schema.RecordType
+    r.repos[schemaName] = repo
+    return schemaName
 }
 
 func (r *RepoMan) Status() string {
