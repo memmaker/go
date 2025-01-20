@@ -5,7 +5,6 @@ import (
     "io"
     "os"
     "path"
-    "strings"
 )
 
 func MustLoad(open *os.File, err error) *os.File {
@@ -66,18 +65,16 @@ func ReadFileAsLines(filename string) []string {
     return lines
 }
 func ReadFile(filename string) string {
-    var sb strings.Builder
     file, err := os.Open(filename)
     if err != nil {
         return ""
     }
     defer file.Close()
-    scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
-        sb.WriteString(scanner.Text())
-        sb.WriteString("\n")
+    all, err := io.ReadAll(file)
+    if err != nil {
+        return ""
     }
-    return sb.String()
+    return string(all)
 }
 func WriteFile(filename string, content string) error {
     file, err := os.Create(filename)
