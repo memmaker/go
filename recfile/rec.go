@@ -340,7 +340,7 @@ func NewReader() *RecReader {
 
 		// references
 		// %ref: field_name record_type
-		refRegex: regexp.MustCompile(`^%ref:\s*([a-zA-Z][a-zA-Z0-9_]*)\s+([a-zA-Z][a-zA-Z0-9_]*)`),
+		refRegex: regexp.MustCompile(`^%ref:\s*([a-zA-Z][a-zA-Z0-9_]*)\s+(.*)`),
 
 		// enums
 		// %typedef: Status_t enum NEW STARTED DONE CLOSED
@@ -408,8 +408,15 @@ func (r *RecReader) ReadLine(line string) {
 
 	if matches := r.refRegex.FindStringSubmatch(line); matches != nil {
 		fieldName := matches[1]
-		recordType := matches[2]
-		r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithReference(fieldName, recordType)
+		foundType := strings.TrimSpace(matches[2])
+
+		if strings.ContainsRune(foundType, ' ') {
+			foundTypes := strings.Split(foundType, " ")
+			r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithMultiReference(fieldName, foundTypes)
+		} else {
+			r.schemas[r.currentRecordType] = r.schemas[r.currentRecordType].WithReference(fieldName, foundType)
+		}
+
 		return
 	}
 
